@@ -10,7 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
@@ -26,51 +26,48 @@ public class QuizQuestion {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long questionId;
 
-	@Column(nullable=false,unique=true)
+	@Column(nullable = false, unique = true)
 	private String question;
 
-	
 	private String description;
-	
-	@Column(nullable=false,unique=true)
+
 	private String questionType;
-	
+
 	private String totalOptions;
-	
+
 	private String totalAnswers;
+
+	public QuizQuestion() {
 	
-	
-	@Column(nullable=false,unique=true)
+	}
+
 	private String questionScore;
 
-	@OneToMany(targetEntity = QuizAnswers.class, cascade = CascadeType.ALL)
+	@ManyToOne(targetEntity = Quiz.class, cascade = CascadeType.ALL)
+	@JoinColumn(name = "quizId", insertable = false, updatable = false)
+	private Quiz quiz;
+
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name = "questionId")
-	@OrderColumn(name = "type")
 	private List<QuizAnswers> quizAnswers;
 
-	@OneToMany(targetEntity = QuizOptions.class, cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name = "questionId")
-	@OrderColumn(name = "type")
 	private List<QuizOptions> quizOptions;
-	
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@CreationTimestamp
 	private Date createdAt;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-    @UpdateTimestamp
-	private Date updatedAt;
-	
-	
-	public QuizQuestion()
-	{
-		
-	}
 
-	public QuizQuestion( String question, String description, String questionType, String totalOptions,
+	@Temporal(TemporalType.TIMESTAMP)
+	@UpdateTimestamp
+	private Date updatedAt;
+
+	
+
+	public QuizQuestion(String question, String description, String questionType, String totalOptions,
 			String totalAnswers, String questionScore, List<QuizAnswers> quizAnswers, List<QuizOptions> quizOptions) {
-			
+
 		this.question = question;
 		this.description = description;
 		this.questionType = questionType;
@@ -88,8 +85,6 @@ public class QuizQuestion {
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-
-	
 
 	public List<QuizAnswers> getQuizAnswers() {
 		return quizAnswers;
@@ -115,7 +110,7 @@ public class QuizQuestion {
 		this.quizAnswers = quizAnswers;
 	}
 
-	 public String getQuestionType() {
+	public String getQuestionType() {
 		return questionType;
 	}
 
@@ -169,6 +164,22 @@ public class QuizQuestion {
 
 	public void setOptions(List<QuizOptions> quizOptions) {
 		this.quizOptions = quizOptions;
+	}
+
+	public List<QuizOptions> getQuizOptions() {
+		return quizOptions;
+	}
+
+	public void setQuizOptions(List<QuizOptions> quizOptions) {
+		this.quizOptions = quizOptions;
+	}
+
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
 	}
 
 }

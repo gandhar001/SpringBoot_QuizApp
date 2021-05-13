@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
@@ -34,15 +35,20 @@ public class Quiz {
 	private String allocatedTime;
 	private String totalQuestions;
 	private String maxScore;
+
+	@ManyToOne(targetEntity = QuizCategory.class, cascade = CascadeType.ALL)
+	@JoinColumn(name = "categoryId", insertable = false, updatable = false)
+	private QuizCategory quizCategory;
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@CreationTimestamp
 	private Date createdAt;
 	@Temporal(TemporalType.TIMESTAMP)
 	@UpdateTimestamp
 	private Date updatedAt;
+
 	@OneToMany(targetEntity = QuizQuestion.class, cascade = CascadeType.ALL)
 	@JoinColumn(name = "quizId")
-	@OrderColumn(name = "type")
 	private List<QuizQuestion> quizQuestions;
 
 	public Quiz(String quizName, String description, String allocatedPoints, String allocatedTime,
@@ -57,10 +63,10 @@ public class Quiz {
 		this.quizQuestions = quizQuestions;
 	}
 
-	public Quiz()
-	{
-		
+	public Quiz() {
+
 	}
+
 	public Date getCreatedAt() {
 		return createdAt;
 	}

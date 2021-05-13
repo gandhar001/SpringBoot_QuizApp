@@ -21,9 +21,6 @@ public class QuizAnswers {
 
 	private String answer;
 	
-	
-	
-	
 	public QuizAnswers(String answer) {
 		
 		this.answer = answer;

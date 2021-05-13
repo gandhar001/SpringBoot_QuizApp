@@ -40,7 +40,6 @@ public class QuizCategory {
 
 	@OneToMany(targetEntity = Quiz.class, cascade = CascadeType.ALL)
 	@JoinColumn(name = "categoryId")
-	@OrderColumn(name = "type")
 	private List<Quiz> quizes;
 
 	@Temporal(TemporalType.TIMESTAMP)

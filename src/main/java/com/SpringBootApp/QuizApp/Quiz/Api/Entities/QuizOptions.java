@@ -2,11 +2,14 @@ package com.SpringBootApp.QuizApp.Quiz.Api.Entities;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -18,28 +21,30 @@ public class QuizOptions {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long optionId;
-	
-	
+
 	private String quizOption;
-	
+
+	@ManyToOne(targetEntity = QuizQuestion.class, cascade = CascadeType.ALL)
+	@JoinColumn(name = "questionId", insertable = false, updatable = false)
+	private QuizQuestion quizQuestion;
 
 	public QuizOptions(String quizOption) {
-		super();
+
 		this.quizOption = quizOption;
 	}
-	public QuizOptions()
-	{
-		
+
+	public QuizOptions() {
+
 	}
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@CreationTimestamp
 	private Date createdAt;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
-    @UpdateTimestamp
+	@UpdateTimestamp
 	private Date updatedAt;
-	
+
 	public long getOptionId() {
 		return optionId;
 	}
@@ -71,8 +76,5 @@ public class QuizOptions {
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-
-
-	
 
 }
