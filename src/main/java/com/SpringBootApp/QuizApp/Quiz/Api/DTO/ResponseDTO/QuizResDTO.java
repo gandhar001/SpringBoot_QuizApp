@@ -7,23 +7,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class QuizResDTO {
 
+	private String quizId;
 	private String quizName;
-
 	private String description;
-
 	private String allocatedPoints;
 	private String allocatedTime;
 	private String totalQuestions;
 	private String maxScore;
-
 	private Date createdAt;
-
 	private Date updatedAt;
-	
-	
-	public QuizResDTO(String quizName, String description, String allocatedPoints, String allocatedTime,
+
+	public QuizResDTO(String quizId, String quizName, String description, String allocatedPoints, String allocatedTime,
 			String totalQuestions, String maxScore, Date createdAt, Date updatedAt) {
-		
+		this.quizId = quizId;
 		this.quizName = quizName;
 		this.description = description;
 		this.allocatedPoints = allocatedPoints;
@@ -33,7 +29,6 @@ public class QuizResDTO {
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
 	}
-
 
 	public String getQuizName() {
 		return quizName;
@@ -83,6 +78,14 @@ public class QuizResDTO {
 		this.maxScore = maxScore;
 	}
 
+	public String getQuizId() {
+		return quizId;
+	}
+
+	public void setQuizId(String quizId) {
+		this.quizId = quizId;
+	}
+
 	public Date getCreatedAt() {
 		return createdAt;
 	}
@@ -98,10 +101,5 @@ public class QuizResDTO {
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-
-	
-
-
-	
 
 }

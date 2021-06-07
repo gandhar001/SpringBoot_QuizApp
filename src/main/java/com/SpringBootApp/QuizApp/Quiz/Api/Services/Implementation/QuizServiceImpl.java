@@ -19,6 +19,7 @@ import com.SpringBootApp.QuizApp.Quiz.Api.DAO.QuizDAO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.CreateQuizDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuestionDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuizDTO;
+import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuizOptionDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizResDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizCategoriesDTO;
 
@@ -26,7 +27,7 @@ import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizQuestionsDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.CategoryDTO;
 
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.Quiz;
-import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizAnswers;
+
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizCategory;
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizOptions;
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizQuestion;
@@ -56,8 +57,7 @@ public class QuizServiceImpl implements QuizService {
 		List<QuizQuestion> quizQuestions = null;
 		List<Quiz> quizes = null;
 		List<String> quizCategories = null;
-
-		List<QuizAnswers> quizAnswers = null;
+		int totalAnswers = 0;
 		List<QuizOptions> quizOptions = null;
 
 		try {
@@ -72,31 +72,28 @@ public class QuizServiceImpl implements QuizService {
 					quizQuestions = new ArrayList<>();
 					for (QuestionDTO question : quiz.getQuestions()) {
 
-						if (question.getQuizAnswers().size() != 0) {
-
-							quizAnswers = new ArrayList<>();
-							for (String quizAnswer : question.getQuizAnswers()) {
-								quizAnswers.add(new QuizAnswers(quizAnswer));
-							}
-						}
-
-						if (question.getQuizOptions().size() != 0) {
+						if (question.getQuizOptions().size() > 0) {
 							quizOptions = new ArrayList<>();
-							for (String quizOption : question.getQuizOptions()) {
-								quizOptions.add(new QuizOptions(quizOption));
+							totalAnswers = 0;
+							for (QuizOptionDTO quizOption : question.getQuizOptions()) {
+
+								if (quizOption.getIsAnswer()) {
+									totalAnswers++;
+								}
+								quizOptions.add(new QuizOptions(quizOption.getOption(), quizOption.getIsAnswer()));
 							}
 						}
-						if (question != null && quizAnswers.size() != 0 && quizOptions.size() != 0) {
+
+						if (question != null && totalAnswers > 0 && quizOptions.size() > 0) {
 
 							quizQuestions.add(new QuizQuestion(question.getQuestion(), question.getDescription(),
 									question.getQuestionType(), String.valueOf(quizOptions.size()),
-									String.valueOf(quizAnswers.size()), question.getQuestionScore(), quizAnswers,
-									quizOptions));
+									String.valueOf(totalAnswers), question.getQuestionScore(), quizOptions));
 						}
 
 					}
 
-					if (quizQuestions.size() != 0 && quiz != null) {
+					if (quizQuestions.size() > 0 && quiz != null) {
 
 						quizes.add(new Quiz(quiz.getQuizName(), quiz.getDescription(), quiz.getAllocatedPoints(),
 								quiz.getAllocatedTime(), String.valueOf(quizQuestions.size()), quiz.getMaxScore(),
@@ -105,7 +102,7 @@ public class QuizServiceImpl implements QuizService {
 
 				}
 
-				if (quizes.size() != 0 && category != null) {
+				if (quizes.size() > 0 && category != null) {
 
 					quizCategories.add(String.valueOf(categoryDAO.save(new QuizCategory(category.getCategory(),
 							category.getDescription(), String.valueOf(quizes.size()), quizes)).getCategoryId()));
@@ -170,17 +167,17 @@ public class QuizServiceImpl implements QuizService {
 		try {
 			quizes = quizDAO.fetchQuiz(categoryId);
 
-			if (quizes.size() != 0) {
+			if (quizes.size() > 0) {
 				fetchedQuizes = new ArrayList<>();
 
 				for (Quiz quiz : quizes) {
 					if (quiz != null) {
-						fetchedQuizes.add(new QuizResDTO(quiz.getQuizName(), quiz.getDescription(),
+						fetchedQuizes.add(new QuizResDTO(String.valueOf(quiz.getQuizId()),quiz.getQuizName(), quiz.getDescription(),
 								quiz.getAllocatedPoints(), quiz.getAllocatedTime(), quiz.getTotalQuestions(),
 								quiz.getMaxScore(), quiz.getCreatedAt(), quiz.getUpdatedAt()));
 					}
 				}
-				fetchQuizesRes.put("fetchedQuizes", quizes);
+				fetchQuizesRes.put("fetchedQuizes", fetchedQuizes);
 				fetchQuizesRes.put("status", "success");
 				logger.info("quizes fetched successfully!!");
 			}
@@ -213,7 +210,7 @@ public class QuizServiceImpl implements QuizService {
 				fetchedQuestions = new ArrayList<>();
 				for (QuizQuestion quizQuestion : quizQuestions) {
 					if (quizQuestion != null) {
-						fetchedQuestions.add(new QuizQuestionsDTO(quizQuestion.getQuestionId(),
+						fetchedQuestions.add(new QuizQuestionsDTO(String.valueOf(quizQuestion.getQuestionId()),
 								quizQuestion.getQuestion(), quizQuestion.getDescription(),
 								quizQuestion.getQuestionType(), quizQuestion.getTotalOptions(),
 								quizQuestion.getQuestionScore(), quizQuestion.getOptions(), quizQuestion.getCreatedAt(),

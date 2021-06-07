@@ -2,7 +2,6 @@ package com.SpringBootApp.QuizApp.Quiz.Api.Entities;
 
 import java.util.Date;
 import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,11 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -47,9 +43,7 @@ public class QuizQuestion {
 	@JoinColumn(name = "quizId", insertable = false, updatable = false)
 	private Quiz quiz;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "questionId")
-	private List<QuizAnswers> quizAnswers;
+	
 
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name = "questionId")
@@ -66,7 +60,7 @@ public class QuizQuestion {
 	
 
 	public QuizQuestion(String question, String description, String questionType, String totalOptions,
-			String totalAnswers, String questionScore, List<QuizAnswers> quizAnswers, List<QuizOptions> quizOptions) {
+			String totalAnswers, String questionScore,List<QuizOptions> quizOptions) {
 
 		this.question = question;
 		this.description = description;
@@ -74,7 +68,7 @@ public class QuizQuestion {
 		this.totalOptions = totalOptions;
 		this.totalAnswers = totalAnswers;
 		this.questionScore = questionScore;
-		this.quizAnswers = quizAnswers;
+	
 		this.quizOptions = quizOptions;
 	}
 
@@ -86,9 +80,7 @@ public class QuizQuestion {
 		this.updatedAt = updatedAt;
 	}
 
-	public List<QuizAnswers> getQuizAnswers() {
-		return quizAnswers;
-	}
+	
 
 	public String getTotalOptions() {
 		return totalOptions;
@@ -106,9 +98,7 @@ public class QuizQuestion {
 		this.totalAnswers = totalAnswers;
 	}
 
-	public void setQuizAnswers(List<QuizAnswers> quizAnswers) {
-		this.quizAnswers = quizAnswers;
-	}
+	
 
 	public String getQuestionType() {
 		return questionType;
@@ -150,14 +140,7 @@ public class QuizQuestion {
 		this.questionScore = questionScore;
 	}
 
-	public List<QuizAnswers> getQuizAnswer() {
-		return quizAnswers;
-	}
-
-	public void setQuizAnswer(List<QuizAnswers> quizAnswers) {
-		this.quizAnswers = quizAnswers;
-	}
-
+	
 	public List<QuizOptions> getOptions() {
 		return quizOptions;
 	}

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class QuizQuestionsDTO {
 
-	private long questionId;
+	private String questionId;
 
 	private String question;
 
@@ -24,7 +24,7 @@ public class QuizQuestionsDTO {
 
 	private List<QuizOptions> quizOptions;
 
-	public QuizQuestionsDTO(long questionId, String question, String description, String questionType,
+	public QuizQuestionsDTO(String questionId, String question, String description, String questionType,
 			String totalOptions, String questionScore, List<QuizOptions> quizOptions, Date createdAt,
 			Date updatedAt) {
 
@@ -44,11 +44,11 @@ public class QuizQuestionsDTO {
 
 	private Date updatedAt;
 
-	public long getQuestionId() {
+	public String getQuestionId() {
 		return questionId;
 	}
 
-	public void setQuestionId(long questionId) {
+	public void setQuestionId(String questionId) {
 		this.questionId = questionId;
 	}
 

@@ -24,13 +24,32 @@ public class QuizOptions {
 
 	private String quizOption;
 
+	private Boolean isAnswer;
+
 	@ManyToOne(targetEntity = QuizQuestion.class, cascade = CascadeType.ALL)
 	@JoinColumn(name = "questionId", insertable = false, updatable = false)
 	private QuizQuestion quizQuestion;
 
-	public QuizOptions(String quizOption) {
+	public String getQuizOption() {
+		return quizOption;
+	}
 
+	public void setQuizOption(String quizOption) {
 		this.quizOption = quizOption;
+	}
+
+	public QuizOptions(String quizOption, Boolean isAnswer) {
+		super();
+		this.quizOption = quizOption;
+		this.isAnswer = isAnswer;
+	}
+
+	public Boolean getIsAnswer() {
+		return isAnswer;
+	}
+
+	public void setIsAnswer(Boolean isAnswer) {
+		this.isAnswer = isAnswer;
 	}
 
 	public QuizOptions() {
