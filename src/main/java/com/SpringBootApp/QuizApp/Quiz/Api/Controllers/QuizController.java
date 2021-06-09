@@ -3,8 +3,6 @@ package com.SpringBootApp.QuizApp.Quiz.Api.Controllers;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-import javax.websocket.server.PathParam;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.CreateQuizDTO;
+import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuizSubmissionDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.Services.Implementation.QuizServiceImpl;
 
 import com.SpringBootApp.QuizApp.Utils.ResponseDTO.ResDTO;
@@ -62,7 +61,7 @@ public class QuizController {
 	}
 
 	@GetMapping(value = "{categoryId}/fetch-quizes")
-	public ResponseEntity<ResDTO> fetchQuizes(@PathVariable("categoryId") String  categoryId) throws Exception {
+	public ResponseEntity<ResDTO> fetchQuizes(@PathVariable("categoryId") String categoryId) throws Exception {
 
 		ResDTO apiResponse = null;
 
@@ -77,6 +76,7 @@ public class QuizController {
 
 		return new ResponseEntity<ResDTO>(apiResponse, HttpStatus.OK);
 	}
+
 	@GetMapping(value = "{quizId}/fetch-questions")
 	public ResponseEntity<ResDTO> fetchQuizQuestions(@PathVariable("quizId") String quizId) throws Exception {
 
@@ -90,6 +90,26 @@ public class QuizController {
 
 		else if (fetchQuestionsMap.get("status") == "success")
 			apiResponse = new ResDTO(fetchQuestionsMap, "success", HttpStatus.CREATED, LocalDateTime.now());
+
+		return new ResponseEntity<ResDTO>(apiResponse, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "{categoryId}/generate-result/{quizId}")
+	public ResponseEntity<ResDTO> generateQuizResult(@PathVariable("quizId") String quizId,
+			@PathVariable("categoryId") String categoryId, @RequestBody QuizSubmissionDTO quizSubmissionDTO)
+			throws Exception {
+
+		ResDTO apiResponse = null;
+
+		Map<String, Object> fetchQuizResultMap = quizService.generateQuizResult(quizSubmissionDTO,
+				Long.valueOf(categoryId), Long.valueOf(categoryId));
+
+		if (fetchQuizResultMap.get("status") == "failed") {
+			apiResponse = new ResDTO(fetchQuizResultMap, "failed", HttpStatus.BAD_REQUEST, LocalDateTime.now());
+		}
+
+		else if (fetchQuizResultMap.get("status") == "success")
+			apiResponse = new ResDTO(fetchQuizResultMap, "success", HttpStatus.CREATED, LocalDateTime.now());
 
 		return new ResponseEntity<ResDTO>(apiResponse, HttpStatus.OK);
 	}

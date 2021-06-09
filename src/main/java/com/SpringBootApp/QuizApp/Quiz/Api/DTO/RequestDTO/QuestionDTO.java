@@ -11,13 +11,13 @@ public class QuestionDTO {
 
 	private String questionScore;
 
-	private List<QuizOptionDTO> quizOptions;
+	private List<QuizOptionsDTO> quizOptions;
 
-	public List<QuizOptionDTO> getQuizOptions() {
+	public List<QuizOptionsDTO> getQuizOptions() {
 		return quizOptions;
 	}
 
-	public void setQuizOptions(List<QuizOptionDTO> quizOptions) {
+	public void setQuizOptions(List<QuizOptionsDTO> quizOptions) {
 		this.quizOptions = quizOptions;
 	}
 

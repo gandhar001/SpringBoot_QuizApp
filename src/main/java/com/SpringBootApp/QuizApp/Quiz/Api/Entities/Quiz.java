@@ -1,8 +1,6 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.Entities;
-
 import java.util.Date;
 import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,10 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -31,10 +27,20 @@ public class Quiz {
 
 	private String description;
 
-	private String allocatedPoints;
-	private String allocatedTime;
-	private String totalQuestions;
-	private String maxScore;
+	@Column(precision = 10, scale = 0)
+	private Double passingPercentage;
+
+	@Column(precision = 10, scale = 0)
+	private Double allocatedPoints;
+
+	@Column(precision = 10, scale = 0)
+	private Double allocatedTime;
+
+	@Column(precision = 10, scale = 0)
+	private Double totalQuestions;
+
+	@Column(precision = 10, scale = 0)
+	private Double maxScore;
 
 	@ManyToOne(targetEntity = QuizCategory.class, cascade = CascadeType.ALL)
 	@JoinColumn(name = "categoryId", insertable = false, updatable = false)
@@ -51,15 +57,17 @@ public class Quiz {
 	@JoinColumn(name = "quizId")
 	private List<QuizQuestion> quizQuestions;
 
-	public Quiz(String quizName, String description, String allocatedPoints, String allocatedTime,
-			String totalQuestions, String maxScore, List<QuizQuestion> quizQuestions) {
+	public Quiz(String quizName, String description, Double passingPercentage, Double allocatedPoints,
+			Double allocatedTime, Double totalQuestions, Double maxScore, List<QuizQuestion> quizQuestions) {
 
 		this.quizName = quizName;
 		this.description = description;
+		this.passingPercentage = passingPercentage;
 		this.allocatedPoints = allocatedPoints;
 		this.allocatedTime = allocatedTime;
 		this.totalQuestions = totalQuestions;
 		this.maxScore = maxScore;
+
 		this.quizQuestions = quizQuestions;
 	}
 
@@ -115,36 +123,52 @@ public class Quiz {
 		this.description = description;
 	}
 
-	public String getAllocatedPoints() {
+	public Double getAllocatedPoints() {
 		return allocatedPoints;
 	}
 
-	public void setAllocatedPoints(String allocatedPoints) {
+	public void setAllocatedPoints(Double allocatedPoints) {
 		this.allocatedPoints = allocatedPoints;
 	}
 
-	public String getAllocatedTime() {
+	public Double getAllocatedTime() {
 		return allocatedTime;
 	}
 
-	public void setAllocatedTime(String allocatedTime) {
+	public void setAllocatedTime(Double allocatedTime) {
 		this.allocatedTime = allocatedTime;
 	}
 
-	public String getTotalQuestions() {
+	public Double getTotalQuestions() {
 		return totalQuestions;
 	}
 
-	public void setTotalQuestions(String totalQuestions) {
+	public void setTotalQuestions(Double totalQuestions) {
 		this.totalQuestions = totalQuestions;
 	}
 
-	public String getMaxScore() {
+	public Double getMaxScore() {
 		return maxScore;
 	}
 
-	public void setMaxScore(String maxScore) {
+	public void setMaxScore(Double maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	public QuizCategory getQuizCategory() {
+		return quizCategory;
+	}
+
+	public void setQuizCategory(QuizCategory quizCategory) {
+		this.quizCategory = quizCategory;
+	}
+
+	public Double getPassingPercentage() {
+		return passingPercentage;
+	}
+
+	public void setPassingPercentage(Double passingPercentage) {
+		this.passingPercentage = passingPercentage;
 	}
 
 }

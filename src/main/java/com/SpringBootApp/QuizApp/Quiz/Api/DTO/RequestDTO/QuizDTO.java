@@ -9,8 +9,28 @@ public class QuizDTO {
 	private String allocatedTime;
 	private String maxScore;
 	
+
+	private String passingPercentage;
+
 	private List<QuestionDTO> questions;
 
+	public QuizDTO() {
+
+	}
+
+	public QuizDTO(String quizName, String description, String allocatedPoints, String allocatedTime, String maxScore,
+			String passingPercentage, List<QuestionDTO> questions) {
+
+		this.quizName = quizName;
+		this.description = description;
+		this.allocatedPoints = allocatedPoints;
+		this.allocatedTime = allocatedTime;
+		this.maxScore = maxScore;
+		this.passingPercentage = passingPercentage;
+		this.questions = questions;
+	}
+
+	
 	public List<QuestionDTO> getQuestions() {
 		return questions;
 	}
@@ -42,20 +62,6 @@ public class QuizDTO {
 	public void setAllocatedPoints(String allocatedPoints) {
 		this.allocatedPoints = allocatedPoints;
 	}
-	
-	public QuizDTO()
-	{
-		
-	}
-
-	public QuizDTO(String quizName, String description, String allocatedPoints, String allocatedTime, String maxScore) {
-		super();
-		this.quizName = quizName;
-		this.description = description;
-		this.allocatedPoints = allocatedPoints;
-		this.allocatedTime = allocatedTime;
-		this.maxScore = maxScore;
-	}
 
 	public String getAllocatedTime() {
 		return allocatedTime;
@@ -73,5 +79,12 @@ public class QuizDTO {
 		this.maxScore = maxScore;
 	}
 
-	
+	public String getPassingPercentage() {
+		return passingPercentage;
+	}
+
+	public void setPassingPercentage(String passingPercentage) {
+		this.passingPercentage = passingPercentage;
+	}
+
 }

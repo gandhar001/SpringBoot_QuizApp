@@ -4,9 +4,6 @@ import java.util.List;
 
 public class CreateQuizDTO {
 	
-	
-	
-	
 	private List<CategoryDTO> quizCategories ;
 
 	public List<CategoryDTO> getQuizCategories() {

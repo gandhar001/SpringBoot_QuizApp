@@ -12,13 +12,15 @@ public class QuizResDTO {
 	private String description;
 	private String allocatedPoints;
 	private String allocatedTime;
+	private String passingPercentage;
 	private String totalQuestions;
 	private String maxScore;
+
 	private Date createdAt;
 	private Date updatedAt;
 
 	public QuizResDTO(String quizId, String quizName, String description, String allocatedPoints, String allocatedTime,
-			String totalQuestions, String maxScore, Date createdAt, Date updatedAt) {
+			String totalQuestions, String maxScore,String passingPercentage, Date createdAt, Date updatedAt) {
 		this.quizId = quizId;
 		this.quizName = quizName;
 		this.description = description;
@@ -28,7 +30,11 @@ public class QuizResDTO {
 		this.maxScore = maxScore;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+		this.passingPercentage=passingPercentage;
+		
 	}
+
+	
 
 	public String getQuizName() {
 		return quizName;
@@ -100,6 +106,14 @@ public class QuizResDTO {
 
 	public void setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getPassingPercentage() {
+		return passingPercentage;
+	}
+
+	public void setPassingPercentage(String passingPercentage) {
+		this.passingPercentage = passingPercentage;
 	}
 
 }

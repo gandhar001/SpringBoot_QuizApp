@@ -1,6 +1,6 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO;
 
-public class QuizOptionDTO {
+public class QuizOptionsDTO {
 
 	private String option;
 	private Boolean isAnswer;
@@ -21,7 +21,7 @@ public class QuizOptionDTO {
 		this.isAnswer = isAnswer;
 	}
 
-	public QuizOptionDTO(String option, Boolean isAnswer) {
+	public QuizOptionsDTO(String option, Boolean isAnswer) {
 		super();
 		this.option = option;
 		this.isAnswer = isAnswer;
