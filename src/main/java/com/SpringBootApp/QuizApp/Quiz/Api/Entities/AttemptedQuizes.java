@@ -93,6 +93,10 @@ public class AttemptedQuizes {
 		this.attemptStatus = attemptStatus;
 	}
 
+	public AttemptedQuizes() {
+		
+	}
+
 	public AttemptedQuizes(UserEntity user, Quiz quiz, Double totalAttempts, Double percentageScored,
 			Double marksScored, Boolean attemptStatus) {
 

@@ -32,7 +32,7 @@ import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizCategoriesDTO;
 
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizQuestionsDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.CategoryDTO;
-
+import com.SpringBootApp.QuizApp.Quiz.Api.Entities.AttemptedQuizes;
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.Quiz;
 
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizCategory;
@@ -259,134 +259,227 @@ public class QuizServiceImpl implements QuizService {
 			throws Exception {
 		Map<String, Object> generateQuizResultRes = new HashMap<>();
 		Quiz quiz = null;
-		QuizQuestion quizQuestion = null;
 
 		UserEntity user = null;
 
-		SubmittedQuizDTO attemptedQuestion = null;
+		QuizQuestion attemptedQuestion = null;
+		
+		SubmittedQuizDTO quizQuestion = null;
+		AttemptedQuizes attemptedQuiz = null;
 		List<Long> attemptedQuestionIds = null;
 		List<QuizQuestion> attemptedQuestions = null;
+		List<QuizQuestion> correctAnswers = null;
 		List<SubmittedQuizDTO> submittedQuestions = null;
-		Double attemptedQuizQuestions = 0.0;
-		Double correctAnswers = 0.0;
-		String questionId = null;
-		Double incorrectAnswers = 0.0;
+		Double totAttemptedQuestions = 0.0;
+
+		Double totAttempts = 0.0;
+
+		Double processedPercentage = 0.0;
+		Double processedScore = 0.0;
+		String attemptStatus = "Failed";
+		Double processedPoints = 0.0;
+		Boolean quizCleared = false;
+		Double totCorrectAnswers = 0.0;
+
+		Double totIncorrectAnswers = 0.0;
 		Long userId = null;
 		GeneratedQuizResultDTO generatedQuizResult = null;
 
 		try {
 
-			if (quizSubmissionDTO.getUserId() != null) {
-				userId = Long.valueOf(quizSubmissionDTO.getUserId());
-				user = userDAO.findById(userId).get();
+			userId = Long.valueOf(quizSubmissionDTO.getUserId());
+			user = userDAO.findById(userId).get();
+			if (user == null) {
+
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("errorMessage", "User does not exist");
+				logger.info("User with user id :" + userId + " does not exist.");
+				return generateQuizResultRes;
+
 			}
 
-			if (quizId != null) {
+			if (quizId == null) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("errorMessage", "Quiz does not exist");
+				logger.info("Quiz with quiz id :" + quizId + " does not exist.");
+				return generateQuizResultRes;
+			} else {
 				quiz = quizDAO.findById(quizId).get();
+				attemptedQuiz = attemptedQuizesDAO.fetchAttemptedQuiz(quizId);
 			}
 			try {
-				if (quizSubmissionDTO.getSubmittedQuiz().size() > 0) {
+				totAttemptedQuestions = Double.valueOf(quizSubmissionDTO.getSubmittedQuiz().size());
+				if (totAttemptedQuestions > 0.0) {
+
 					attemptedQuestionIds = new ArrayList<>();
 					attemptedQuestions = new ArrayList<>();
 					submittedQuestions = quizSubmissionDTO.getSubmittedQuiz();
-					for (SubmittedQuizDTO submittedQuiz : quizSubmissionDTO.getSubmittedQuiz()) {
-						if (submittedQuiz.getQuestionId() != null) {
-							attemptedQuestionIds.add(Long.valueOf(submittedQuiz.getQuestionId()));
+
+					if (submittedQuestions.size() > 0) {
+						for (SubmittedQuizDTO submittedQuiz : submittedQuestions) {
+							if (submittedQuiz.getQuestionId() != null) {
+								attemptedQuestionIds.add(Long.valueOf(submittedQuiz.getQuestionId()));
+							}
 						}
 					}
+
 					attemptedQuestions = questionDAO.fetchAttemptedQuestions(attemptedQuestionIds, quizId);
 
-					attemptedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
-							.compareTo(String.valueOf(o2.getQuestionId())));
-					submittedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
-							.compareTo(String.valueOf(o2.getQuestionId())));
+					if (attemptedQuestions.size() > 0) {
+						attemptedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
+								.compareTo(String.valueOf(o2.getQuestionId())));
+					}
+					if (submittedQuestions.size() > 0) {
+						submittedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
+								.compareTo(String.valueOf(o2.getQuestionId())));
 
-					try {
-						if (attemptedQuestions.size() > 0 && submittedQuestions.size() > 0) {
+					}
 
-							for (int i = 0; i < attemptedQuestions.size(); i++) {
+				}
 
-								quizQuestion = attemptedQuestions.get(i);
-								attemptedQuestion = submittedQuestions.get(i);
+			} catch (NullPointerException ex) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
+				logger.error(ex.getLocalizedMessage());
+			} catch (ArrayIndexOutOfBoundsException ex) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
+				logger.error(ex.getLocalizedMessage());
+			} catch (Exception ex) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
+				logger.error(ex.getLocalizedMessage());
+			}
 
-								if (quizQuestion != null && attemptedQuestion != null
-										&& String.valueOf(quizQuestion.getQuestionId())
-												.equalsIgnoreCase(attemptedQuestion.getQuestionId())) {
+			try {
+				if (attemptedQuestions.size() > 0 && submittedQuestions.size() > 0) {
+					correctAnswers = new ArrayList<>(attemptedQuestions);
 
-									for (String optionId : attemptedQuestion.getAttemptedOptions()) {
+					for (int i = 0; i < attemptedQuestions.size(); i++) {
 
-										for (QuizOptions quizOption : quizQuestion.getOptions()) {
-											if (quizOption != null && String.valueOf(quizOption.getOptionId())
-													.equalsIgnoreCase(optionId)) {
+						attemptedQuestion = attemptedQuestions.get(i);
 
-												if (!quizOption.getIsAnswer()) {
+						quizQuestion = submittedQuestions.get(i);
 
-													attemptedQuestions.remove(quizQuestion);
-													break;
+						if (attemptedQuestion != null && quizQuestion != null
+								&& String.valueOf(attemptedQuestion.getQuestionId())
+										.equalsIgnoreCase(quizQuestion.getQuestionId())) {
 
-												}
+							for (String optionId : quizQuestion.getAttemptedOptions()) {
+
+								if (optionId != null) {
+									for (QuizOptions quizOption : attemptedQuestion.getOptions()) {
+										if (quizOption != null && String.valueOf(quizOption.getOptionId())
+												.equalsIgnoreCase(optionId)) {
+
+											if (!quizOption.getIsAnswer()) {
+
+												correctAnswers.remove(attemptedQuestion);
 
 											}
+
 										}
 									}
-
 								}
-
 							}
-
-							for (QuizQuestion quizQuestion1 : attemptedQuestions) {
-								System.out.println(quizQuestion1.getQuestionId() + " after result calculation");
-							}
-
-//							for (SubmittedQuizDTO submittedQuiz : quizSubmissionDTO.getSubmittedQuiz()) {
-//								questionId = submittedQuiz.getQuestionId();
-//								if (submittedQuiz.getAttemptedOptions().size() > 0) {
-//
-//									for (String optionId : submittedQuiz.getAttemptedOptions()) {
-//										if (optionId != null) {
-//											for (QuizQuestion quizQuestion : attemptedQuestions) {
-//
-//												if (quizQuestion != null && String.valueOf(quizQuestion.getQuestionId())
-//														.equalsIgnoreCase(questionId)) {
-//													for (QuizOptions quizOption : quizQuestion.getOptions()) {
-//														if (quizOption != null
-//																&& String.valueOf(quizOption.getOptionId())
-//																		.equalsIgnoreCase(optionId)) {
-//
-//															if (!quizOption.getIsAnswer()) {
-//
-//																attemptedQuestions.remove(quizQuestion);
-//
-//															}
-//
-//														}
-//													}
-//
-//												}
-//											}
-//										}
-//									}
-//
-//								}
-//							}
 
 						}
 
-					} catch (NullPointerException ex) {
-
-						logger.error(ex.getLocalizedMessage());
-					} catch (Exception ex) {
-
-						logger.error(ex.getLocalizedMessage());
-
 					}
+
 				}
 			} catch (NullPointerException ex) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
+				logger.error(ex.getLocalizedMessage());
+			}
 
+			catch (ArrayIndexOutOfBoundsException ex) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
 				logger.error(ex.getLocalizedMessage());
 			} catch (Exception ex) {
 
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
 				logger.error(ex.getLocalizedMessage());
+
+			}
+			try {
+
+				totCorrectAnswers = Double.valueOf(correctAnswers.size());
+				totIncorrectAnswers = totAttemptedQuestions - totCorrectAnswers;
+
+				if (totCorrectAnswers > 0) {
+
+					for (QuizQuestion correctQuestion : correctAnswers) {
+						processedScore = processedScore + Double.valueOf(correctQuestion.getQuestionScore());
+
+					}
+					if (processedScore > 0) {
+						processedPercentage = processedScore * 100 / quiz.getMaxScore();
+					}
+
+					if (processedPercentage > 0 && processedPercentage >= quiz.getPassingPercentage()) {
+
+						quizCleared = true;
+
+						attemptStatus = "Passed";
+						processedPoints = quiz.getAllocatedPoints();
+
+						if (user != null) {
+							user.setProFactor(processedPoints);
+							userDAO.save(user);
+						}
+
+						if (attemptedQuiz != null) {
+
+							totAttempts = attemptedQuiz.getTotalAttempts();
+							if (totAttempts == null) {
+								totAttempts = 1.0;
+							} else {
+								totAttempts++;
+							}
+
+							attemptedQuiz.setAttemptStatus(quizCleared);
+							attemptedQuiz.setMarksScored(processedScore);
+							attemptedQuiz.setPercentageScored(processedPercentage);
+							attemptedQuiz.setTotalAttempts(totAttempts);
+
+						} else {
+							totAttempts++;
+							attemptedQuiz = new AttemptedQuizes(user, quiz, totAttempts, processedPercentage,
+									processedScore, quizCleared);
+
+						}
+						if (attemptedQuiz != null)
+							attemptedQuizesDAO.save(attemptedQuiz);
+
+					}
+
+				}
+
+			} catch (NullPointerException ex) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
+				logger.error(ex.getLocalizedMessage());
+			}
+
+			catch (Exception ex) {
+				generateQuizResultRes.put("status", "failed");
+				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
+				logger.error(ex.getLocalizedMessage());
+
+			}
+			generatedQuizResult = new GeneratedQuizResultDTO(String.valueOf(processedPercentage),
+					String.valueOf(totAttemptedQuestions), String.valueOf(totCorrectAnswers),
+					String.valueOf(totIncorrectAnswers), String.valueOf(processedScore), String.valueOf(attemptStatus),
+					String.valueOf(processedPoints));
+
+			if (generatedQuizResult != null) {
+				generateQuizResultRes.put("generatedQuizResult", generatedQuizResult);
+				generateQuizResultRes.put("status", "success");
+				logger.info("Quiz Result generated successfully ");
 			}
 
 		} catch (EntityNotFoundException ex) {
@@ -405,7 +498,7 @@ public class QuizServiceImpl implements QuizService {
 			logger.error(ex.getLocalizedMessage());
 		}
 
-		return null;
+		return generateQuizResultRes;
 	}
 
 }

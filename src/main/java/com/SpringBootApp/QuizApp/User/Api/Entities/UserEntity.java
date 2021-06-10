@@ -42,6 +42,14 @@ public class UserEntity {
 	@CreationTimestamp
 	private Date createdAt;
 
+	public Double getProFactor() {
+		return proFactor;
+	}
+
+	public void setProFactor(Double proFactor) {
+		this.proFactor = proFactor;
+	}
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@UpdateTimestamp
 	private Date updatedAt;
