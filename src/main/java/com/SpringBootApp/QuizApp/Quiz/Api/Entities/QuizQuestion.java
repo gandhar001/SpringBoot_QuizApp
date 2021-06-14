@@ -25,19 +25,51 @@ public class QuizQuestion {
 	@Column(nullable = false, unique = true)
 	private String question;
 
+	public Double getTotalOptions() {
+		return totalOptions;
+	}
+
+	public void setTotalOptions(Double totalOptions) {
+		this.totalOptions = totalOptions;
+	}
+
+	public Double getTotalAnswers() {
+		return totalAnswers;
+	}
+
+	public void setTotalAnswers(Double totalAnswers) {
+		this.totalAnswers = totalAnswers;
+	}
+
+	public Double getQuestionScore() {
+		return questionScore;
+	}
+
+	public void setQuestionScore(Double questionScore) {
+		this.questionScore = questionScore;
+	}
+
+	public Quiz getQuiz() {
+		return quiz;
+	}
+
+	public void setQuiz(Quiz quiz) {
+		this.quiz = quiz;
+	}
+
 	private String description;
 
 	private String questionType;
 
-	private String totalOptions;
+	private Double totalOptions;
 
-	private String totalAnswers;
+	private Double totalAnswers;
 
 	public QuizQuestion() {
 	
 	}
 
-	private String questionScore;
+	private Double questionScore;
 
 	@ManyToOne(targetEntity = Quiz.class, cascade = CascadeType.ALL)
 	@JoinColumn(name = "quizId", insertable = false, updatable = false)
@@ -59,8 +91,8 @@ public class QuizQuestion {
 
 	
 
-	public QuizQuestion(String question, String description, String questionType, String totalOptions,
-			String totalAnswers, String questionScore,List<QuizOptions> quizOptions) {
+	public QuizQuestion(String question, String description, String questionType, Double totalOptions,
+			Double totalAnswers, Double questionScore,List<QuizOptions> quizOptions) {
 
 		this.question = question;
 		this.description = description;
@@ -82,22 +114,7 @@ public class QuizQuestion {
 
 	
 
-	public String getTotalOptions() {
-		return totalOptions;
-	}
-
-	public void setTotalOptions(String totalOptions) {
-		this.totalOptions = totalOptions;
-	}
-
-	public String getTotalAnswers() {
-		return totalAnswers;
-	}
-
-	public void setTotalAnswers(String totalAnswers) {
-		this.totalAnswers = totalAnswers;
-	}
-
+	
 	
 
 	public String getQuestionType() {
@@ -132,13 +149,7 @@ public class QuizQuestion {
 		this.description = description;
 	}
 
-	public String getQuestionScore() {
-		return questionScore;
-	}
 
-	public void setQuestionScore(String questionScore) {
-		this.questionScore = questionScore;
-	}
 
 	
 	public List<QuizOptions> getOptions() {

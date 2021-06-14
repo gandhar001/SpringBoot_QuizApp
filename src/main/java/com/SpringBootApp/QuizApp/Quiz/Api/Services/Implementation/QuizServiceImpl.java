@@ -101,8 +101,9 @@ public class QuizServiceImpl implements QuizService {
 						if (question != null && totalAnswers > 0 && quizOptions.size() > 0) {
 
 							quizQuestions.add(new QuizQuestion(question.getQuestion(), question.getDescription(),
-									question.getQuestionType(), String.valueOf(quizOptions.size()),
-									String.valueOf(totalAnswers), question.getQuestionScore(), quizOptions));
+									question.getQuestionType(), Double.valueOf(quizOptions.size()),
+									Double.valueOf(totalAnswers), Double.valueOf(question.getQuestionScore()),
+									quizOptions));
 						}
 
 					}
@@ -229,9 +230,9 @@ public class QuizServiceImpl implements QuizService {
 					if (quizQuestion != null) {
 						fetchedQuestions.add(new QuizQuestionsDTO(String.valueOf(quizQuestion.getQuestionId()),
 								quizQuestion.getQuestion(), quizQuestion.getDescription(),
-								quizQuestion.getQuestionType(), quizQuestion.getTotalOptions(),
-								quizQuestion.getQuestionScore(), quizQuestion.getOptions(), quizQuestion.getCreatedAt(),
-								quizQuestion.getUpdatedAt()));
+								quizQuestion.getQuestionType(), String.valueOf(quizQuestion.getTotalOptions()),
+								String.valueOf(quizQuestion.getQuestionScore()), quizQuestion.getOptions(),
+								quizQuestion.getCreatedAt(), quizQuestion.getUpdatedAt()));
 					}
 				}
 
@@ -263,7 +264,7 @@ public class QuizServiceImpl implements QuizService {
 		UserEntity user = null;
 
 		QuizQuestion attemptedQuestion = null;
-		
+
 		SubmittedQuizDTO quizQuestion = null;
 		AttemptedQuizes attemptedQuiz = null;
 		List<Long> attemptedQuestionIds = null;
@@ -271,9 +272,9 @@ public class QuizServiceImpl implements QuizService {
 		List<QuizQuestion> correctAnswers = null;
 		List<SubmittedQuizDTO> submittedQuestions = null;
 		Double totAttemptedQuestions = 0.0;
-
+		Boolean flag = false;
 		Double totAttempts = 0.0;
-
+		Double correctOptions = 0.0;
 		Double processedPercentage = 0.0;
 		Double processedScore = 0.0;
 		String attemptStatus = "Failed";
@@ -353,11 +354,12 @@ public class QuizServiceImpl implements QuizService {
 
 			try {
 				if (attemptedQuestions.size() > 0 && submittedQuestions.size() > 0) {
-					correctAnswers = new ArrayList<>(attemptedQuestions);
+					correctAnswers = new ArrayList<>();
 
 					for (int i = 0; i < attemptedQuestions.size(); i++) {
 
 						attemptedQuestion = attemptedQuestions.get(i);
+						correctOptions = 0.0;
 
 						quizQuestion = submittedQuestions.get(i);
 
@@ -371,16 +373,21 @@ public class QuizServiceImpl implements QuizService {
 									for (QuizOptions quizOption : attemptedQuestion.getOptions()) {
 										if (quizOption != null && String.valueOf(quizOption.getOptionId())
 												.equalsIgnoreCase(optionId)) {
+											if (quizOption.getIsAnswer()) {
 
-											if (!quizOption.getIsAnswer()) {
-
-												correctAnswers.remove(attemptedQuestion);
+												correctOptions++;
 
 											}
 
 										}
+
 									}
 								}
+							}
+							if (correctOptions.equals(attemptedQuestion.getTotalAnswers())
+									&& Double.valueOf(quizQuestion.getAttemptedOptions().size())
+											.equals(attemptedQuestion.getTotalAnswers())) {
+								correctAnswers.add(attemptedQuestion);
 							}
 
 						}
