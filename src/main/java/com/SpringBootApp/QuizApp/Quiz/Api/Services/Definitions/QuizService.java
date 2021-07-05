@@ -15,7 +15,7 @@ public interface QuizService {
 
 	public Map<String, Object> fetchQuizQuestions(Long quizId) throws Exception;
 
-	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, Long quizId, Long categoryId)
+	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, Long quizId)
 			throws Exception;
 
 }

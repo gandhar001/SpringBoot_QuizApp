@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import com.SpringBootApp.QuizApp.User.Api.DAO.UserDao;
 import com.SpringBootApp.QuizApp.User.Api.DTO.RequestDTO.JWTRequest;
 import com.SpringBootApp.QuizApp.User.Api.DTO.RequestDTO.UserDTO;
+import com.SpringBootApp.QuizApp.User.Api.DTO.ResponseDTO.UserResDTO;
 import com.SpringBootApp.QuizApp.User.Api.Services.Definitions.*;
 import com.SpringBootApp.QuizApp.User.Api.Entities.UserEntity;
 import com.SpringBootApp.QuizApp.User.Api.Utils.JwtToken;
@@ -81,12 +82,12 @@ public class JWTUserDetailsServiceImpl implements JWTUserDetailsService, UserDet
 		} catch (ConstraintViolationException ex) {
 
 			registerUserRes.put("status", "failed");
-			registerUserRes.put("exception",ex.getClass().getSimpleName());			
+			registerUserRes.put("exception", ex.getClass().getSimpleName());
 			logger.error(ex.toString());
 		} catch (Exception ex) {
 			registerUserRes.put("status", "failed");
 			registerUserRes.put("exception", ex.getClass().getSimpleName());
-						
+
 			logger.error(ex.toString());
 		}
 
@@ -95,45 +96,52 @@ public class JWTUserDetailsServiceImpl implements JWTUserDetailsService, UserDet
 	}
 
 	public Map<String, Object> authenticateUser(JWTRequest authUser) throws Exception {
-		System.out.println("token generated123");
+
 		Map<String, Object> resMap = new HashMap<>();
 		UserDetails userDetails = null;
 		String authToken = null;
+		UserResDTO loggedInUser = null;
+
+		UserEntity fetchedUser = null;
 
 		try {
+
+			fetchedUser = userDao.findByUsername(authUser.getUsername());
 
 			authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(authUser.getUsername(), authUser.getPassword()));
 
 			userDetails = loadUserByUsername(authUser.getUsername());
 
-			authToken = "Bearer " + jwtToken.generateToken(userDetails);
+			authToken = jwtToken.generateToken(userDetails);
+			loggedInUser = new UserResDTO(String.valueOf(fetchedUser.getUserId()), fetchedUser.getUsername(),
+					fetchedUser.getFirstName(), fetchedUser.getLastName(), fetchedUser.getEmail(),
+					String.valueOf(fetchedUser.getProFactor()));
+
 			if (authToken != null) {
 				resMap.put("status", "success");
 				resMap.put("authToken", authToken);
-				resMap.put("userName", authUser.getUsername());
 
-				System.out.println(authToken + "token generated");
+				resMap.put("loggedInUser", loggedInUser);
+
 			}
 
 		} catch (DisabledException e) {
 
-			resMap.put("status","failed");
-			resMap.put("exception",e.getClass().getSimpleName());
+			resMap.put("status", "failed");
+			resMap.put("exception", e.getClass().getSimpleName());
 			logger.error(e.getLocalizedMessage());
-			
 
 		} catch (BadCredentialsException ex) {
 
-			resMap.put("status","failed");
+			resMap.put("status", "failed");
 			resMap.put("exception", ex.getClass().getSimpleName());
-			logger.error( ex.getLocalizedMessage());
-			
+			logger.error(ex.getLocalizedMessage());
 
 		} catch (Exception ex) {
-			resMap.put("status","failed");
+			resMap.put("status", "failed");
 			resMap.put("exception", ex.getClass().getSimpleName());
-			logger.error( ex.getLocalizedMessage());
+			logger.error(ex.getLocalizedMessage());
 
 		}
 		return resMap;

@@ -35,10 +35,9 @@ public class UserController {
 
 		Map<String, Object> registerUserMap = userService.registerUser(userDTO);
 
-		if (registerUserMap.get("status")=="failed")
-		{
+		if (registerUserMap.get("status") == "failed")
+
 			apiResponse = new ResDTO(registerUserMap, "failed", HttpStatus.BAD_REQUEST, LocalDateTime.now());
-		}
 
 		else if (registerUserMap.get("status") == "success")
 			apiResponse = new ResDTO(registerUserMap, "success", HttpStatus.CREATED, LocalDateTime.now());
@@ -52,17 +51,14 @@ public class UserController {
 		ResDTO apiResponse = null;
 
 		Map<String, Object> authUserMap = userService.authenticateUser(authUser);
-	
-		if (authUserMap.get("status")=="failed")
-		{
-		
-			apiResponse = new ResDTO(authUserMap, "Failed", HttpStatus.UNAUTHORIZED, LocalDateTime.now());
-		}
+
+		if (authUserMap.get("status") == "failed")
+
+			apiResponse = new ResDTO(authUserMap, "failed", HttpStatus.UNAUTHORIZED, LocalDateTime.now());
 
 		else if (authUserMap.get("status") == "success")
-		{
 			apiResponse = new ResDTO(authUserMap, "success", HttpStatus.OK, LocalDateTime.now());
-		}
+
 		return new ResponseEntity<ResDTO>(apiResponse, HttpStatus.OK);
 
 	}

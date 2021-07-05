@@ -256,15 +256,12 @@ public class QuizServiceImpl implements QuizService {
 	}
 
 	@Override
-	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, Long quizId, Long categoryId)
+	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, Long quizId)
 			throws Exception {
 		Map<String, Object> generateQuizResultRes = new HashMap<>();
 		Quiz quiz = null;
-
 		UserEntity user = null;
-
 		QuizQuestion attemptedQuestion = null;
-
 		SubmittedQuizDTO quizQuestion = null;
 		AttemptedQuizes attemptedQuiz = null;
 		List<Long> attemptedQuestionIds = null;
@@ -272,7 +269,6 @@ public class QuizServiceImpl implements QuizService {
 		List<QuizQuestion> correctAnswers = null;
 		List<SubmittedQuizDTO> submittedQuestions = null;
 		Double totAttemptedQuestions = 0.0;
-		Boolean flag = false;
 		Double totAttempts = 0.0;
 		Double correctOptions = 0.0;
 		Double processedPercentage = 0.0;
@@ -281,7 +277,6 @@ public class QuizServiceImpl implements QuizService {
 		Double processedPoints = 0.0;
 		Boolean quizCleared = false;
 		Double totCorrectAnswers = 0.0;
-
 		Double totIncorrectAnswers = 0.0;
 		Long userId = null;
 		GeneratedQuizResultDTO generatedQuizResult = null;

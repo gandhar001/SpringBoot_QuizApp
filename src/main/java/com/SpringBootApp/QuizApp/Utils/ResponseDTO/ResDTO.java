@@ -15,7 +15,6 @@ public class ResDTO {
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime  responseTime;
 	private Map<String,Object> responseBody;
-
 	private String status;
 	private HttpStatus httpStatus;
 	

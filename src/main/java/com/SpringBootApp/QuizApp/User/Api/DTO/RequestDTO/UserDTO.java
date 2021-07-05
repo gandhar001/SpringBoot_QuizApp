@@ -8,6 +8,8 @@ public class UserDTO {
 
 	private String firstName;
 	private String password;
+	
+	
 	public String getPassword() {
 		return password;
 	}
