@@ -27,7 +27,7 @@ public class QuizController {
 
 	@Autowired
 	private QuizServiceImpl quizService;
- 
+
 	@PostMapping(value = "/create-quiz")
 	public ResponseEntity<ResDTO> CreateQuiz(@RequestBody CreateQuizDTO createQuizDTO) throws Exception {
 
@@ -97,8 +97,8 @@ public class QuizController {
 	}
 
 	@PostMapping(value = "{quizId}/generate-result")
-	public ResponseEntity<ResDTO> generateQuizResult(@PathVariable("quizId") String quizId, @RequestBody QuizSubmissionDTO quizSubmissionDTO)
-			throws Exception {
+	public ResponseEntity<ResDTO> generateQuizResult(@PathVariable("quizId") String quizId,
+			@RequestBody QuizSubmissionDTO quizSubmissionDTO) throws Exception {
 
 		ResDTO apiResponse = null;
 
