@@ -1,5 +1,7 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.Entities;
 
+import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,11 +10,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 import com.SpringBootApp.QuizApp.User.Api.Entities.UserEntity;
 
 @Entity
-public class AttemptedQuizes {
+
+public class AttemptedQuizes implements Serializable {
+
+	
+	private static final long serialVersionUID = -4342662754931465675L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,13 +34,13 @@ public class AttemptedQuizes {
 	private Quiz quiz;
 
 	@Column(precision = 10, scale = 0)
-	private Double totalAttempts;
+	private double totalAttempts;
 
 	@Column(precision = 10, scale = 0)
-	private Double percentageScored;
+	private double percentageScored;
 
 	@Column(precision = 10, scale = 0)
-	private Double marksScored;
+	private double marksScored;
 
 	private Boolean attemptStatus;
 
@@ -61,7 +68,7 @@ public class AttemptedQuizes {
 		this.quiz = quiz;
 	}
 
-	public Double getTotalAttempts() {
+	public double getTotalAttempts() {
 		return totalAttempts;
 	}
 
@@ -69,7 +76,7 @@ public class AttemptedQuizes {
 		this.totalAttempts = totalAttempts;
 	}
 
-	public Double getPercentageScored() {
+	public double getPercentageScored() {
 		return percentageScored;
 	}
 
@@ -77,7 +84,7 @@ public class AttemptedQuizes {
 		this.percentageScored = percentageScored;
 	}
 
-	public Double getMarksScored() {
+	public double getMarksScored() {
 		return marksScored;
 	}
 
@@ -97,8 +104,8 @@ public class AttemptedQuizes {
 		
 	}
 
-	public AttemptedQuizes(UserEntity user, Quiz quiz, Double totalAttempts, Double percentageScored,
-			Double marksScored, Boolean attemptStatus) {
+	public AttemptedQuizes(UserEntity user, Quiz quiz, double totalAttempts, double percentageScored,
+			double marksScored, Boolean attemptStatus) {
 
 		this.user = user;
 		this.quiz = quiz;

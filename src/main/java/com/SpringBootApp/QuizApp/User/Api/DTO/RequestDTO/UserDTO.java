@@ -1,12 +1,17 @@
 package com.SpringBootApp.QuizApp.User.Api.DTO.RequestDTO;
 
-
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 
 public class UserDTO {
 
+	@NotEmpty(message = "username can't be null or empty.") 
 	private String username;
 
+	@NotEmpty(message = "firstName can't be null or empty.") 
 	private String firstName;
+	
+	@NotEmpty(message = "password can't be null or empty.") 
 	private String password;
 	
 	
@@ -41,6 +46,9 @@ public class UserDTO {
 		this.email = email;
 	}
 	private String lastName;
+	
+	@NotEmpty(message = "email can't be null or empty.")  
+	@Email(message="email must be of email format.")
 	private String email;
 	
 

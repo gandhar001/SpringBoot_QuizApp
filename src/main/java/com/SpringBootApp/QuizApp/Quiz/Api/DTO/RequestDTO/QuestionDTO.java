@@ -2,13 +2,19 @@ package com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 public class QuestionDTO {
+	
+	@NotNull
 	private String question;
 
 	private String description;
 
+	@NotNull
 	private String questionType;
 
+	@NotNull
 	private String questionScore;
 
 	private List<QuizOptionsDTO> quizOptions;

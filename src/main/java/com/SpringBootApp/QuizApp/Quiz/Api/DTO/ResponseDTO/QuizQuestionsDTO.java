@@ -1,10 +1,9 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO;
 
-import java.util.Date;
 import java.util.List;
 
-
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizOptions;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -24,25 +23,19 @@ public class QuizQuestionsDTO {
 
 	private List<QuizOptions> quizOptions;
 
-	public QuizQuestionsDTO(String questionId, String question, String description, String questionType,
-			String totalOptions, String questionScore, List<QuizOptions> quizOptions, Date createdAt,
-			Date updatedAt) {
+	public QuizQuestionsDTO(long questionId, String question, String description, String questionType,
+			double totalOptions, double questionScore, List<QuizOptions> quizOptions) {
 
-		this.questionId = questionId;
+		this.questionId = String.valueOf(questionId);
 		this.question = question;
 		this.description = description;
 		this.questionType = questionType;
-		this.totalOptions = totalOptions;
-		this.questionScore = questionScore;
+		this.totalOptions = String.valueOf(totalOptions);
+		this.questionScore = String.valueOf(questionScore);
+
 		this.quizOptions = quizOptions;
 
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
 	}
-
-	private Date createdAt;
-
-	private Date updatedAt;
 
 	public String getQuestionId() {
 		return questionId;
@@ -96,27 +89,8 @@ public class QuizQuestionsDTO {
 		return quizOptions;
 	}
 
-	public void setQuizOptions(List<QuizOptions> quizOptions) {
-		this.quizOptions = quizOptions;
-	}
-
-	public QuizQuestionsDTO() {
+	QuizQuestionsDTO() {
 
 	}
 
-	public Date getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public Date getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public void setUpdatedAt(Date updatedAt) {
-		this.updatedAt = updatedAt;
-	}
 }

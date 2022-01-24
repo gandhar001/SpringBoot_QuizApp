@@ -1,7 +1,9 @@
 package com.SpringBootApp.QuizApp.User.Api.Controllers;
 
-import java.time.LocalDateTime;
-import java.util.Map;
+
+
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,37 +31,13 @@ public class UserController {
 	private JWTUserDetailsServiceImpl userService;
 
 	@PostMapping(value = "/register")
-	public ResponseEntity<ResDTO> registerUser(@RequestBody UserDTO userDTO) throws Exception {
-
-		ResDTO apiResponse = null;
-
-		Map<String, Object> registerUserMap = userService.registerUser(userDTO);
-
-		if (registerUserMap.get("status") == "failed")
-
-			apiResponse = new ResDTO(registerUserMap, "failed", HttpStatus.BAD_REQUEST, LocalDateTime.now());
-
-		else if (registerUserMap.get("status") == "success")
-			apiResponse = new ResDTO(registerUserMap, "success", HttpStatus.CREATED, LocalDateTime.now());
-
-		return new ResponseEntity<ResDTO>(apiResponse, HttpStatus.OK);
+	public ResponseEntity<ResDTO> registerUser(@RequestBody @Valid UserDTO userDTO) throws Exception {
+		return new ResponseEntity<ResDTO>(new ResDTO(userService.registerUser(userDTO)), HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/authenticate")
-	public ResponseEntity<ResDTO> authenticateUser(@RequestBody JWTRequest authUser) throws Exception {
-
-		ResDTO apiResponse = null;
-
-		Map<String, Object> authUserMap = userService.authenticateUser(authUser);
-
-		if (authUserMap.get("status") == "failed")
-
-			apiResponse = new ResDTO(authUserMap, "failed", HttpStatus.UNAUTHORIZED, LocalDateTime.now());
-
-		else if (authUserMap.get("status") == "success")
-			apiResponse = new ResDTO(authUserMap, "success", HttpStatus.OK, LocalDateTime.now());
-
-		return new ResponseEntity<ResDTO>(apiResponse, HttpStatus.OK);
+	public ResponseEntity<ResDTO> authenticateUser(@RequestBody @Valid JWTRequest authUser) throws Exception {		
+		return new ResponseEntity<ResDTO>(new ResDTO(userService.authenticateUser(authUser)), HttpStatus.OK);
 
 	}
 

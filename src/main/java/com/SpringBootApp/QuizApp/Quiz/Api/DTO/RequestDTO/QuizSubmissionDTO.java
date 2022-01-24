@@ -2,10 +2,14 @@ package com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO;
 
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+
 public class QuizSubmissionDTO {
+
+	@NotEmpty(message = "userId can't be null or empty.")
 	private String userId;
 
-
+	@NotEmpty(message = "submittedQuiz can't be null or empty.")
 	List<SubmittedQuizDTO> submittedQuiz;
 
 	public String getUserId() {
@@ -24,7 +28,4 @@ public class QuizSubmissionDTO {
 		this.submittedQuiz = submittedQuiz;
 	}
 
-	
 }
-
-

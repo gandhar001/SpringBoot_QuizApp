@@ -1,27 +1,38 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.Entities;
 
+import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
-public class QuizOptions {
+
+public class QuizOptions implements Serializable {
+
+	private static final long serialVersionUID = -8545784074972365526L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long optionId;
 
+	@Column(nullable = false)
 	private String quizOption;
 
+	@JsonIgnore
 	private Boolean isAnswer;
 
 	@ManyToOne(targetEntity = QuizQuestion.class, cascade = CascadeType.ALL)
@@ -62,11 +73,11 @@ public class QuizOptions {
 	@UpdateTimestamp
 	private Date updatedAt;
 
-	public long getOptionId() {
+	public Long getOptionId() {
 		return optionId;
 	}
 
-	public void setOptionId(long optionId) {
+	public void setOptionId(Long optionId) {
 		this.optionId = optionId;
 	}
 

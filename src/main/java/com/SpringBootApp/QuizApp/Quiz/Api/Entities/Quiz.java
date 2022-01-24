@@ -1,4 +1,6 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.Entities;
+
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -10,13 +12,18 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
+
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-public class Quiz {
+
+public class Quiz implements Serializable {
+
+	private static final long serialVersionUID = -5543601079766761212L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,23 +34,23 @@ public class Quiz {
 
 	private String description;
 
-	@Column(precision = 10, scale = 0)
+	@Column(precision = 10, scale = 0, nullable = false)
 	private Double passingPercentage;
 
-	@Column(precision = 10, scale = 0)
+	@Column(precision = 10, scale = 0, nullable = false)
 	private Double allocatedPoints;
 
-	@Column(precision = 10, scale = 0)
+	@Column(precision = 10, scale = 0, nullable = false)
 	private Double allocatedTime;
 
-	@Column(precision = 10, scale = 0)
+	@Column(precision = 10, scale = 0, nullable = false)
 	private Double totalQuestions;
 
-	@Column(precision = 10, scale = 0)
+	@Column(precision = 10, scale = 0, nullable = false)
 	private Double maxScore;
 
 	@ManyToOne(targetEntity = QuizCategory.class, cascade = CascadeType.ALL)
-	@JoinColumn(name = "categoryId", insertable = false, updatable = false)
+	@JoinColumn(name = "categoryId", insertable = true, updatable = true)
 	private QuizCategory quizCategory;
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -57,8 +64,9 @@ public class Quiz {
 	@JoinColumn(name = "quizId")
 	private List<QuizQuestion> quizQuestions;
 
-	public Quiz(String quizName, String description, Double passingPercentage, Double allocatedPoints,
-			Double allocatedTime, Double totalQuestions, Double maxScore, List<QuizQuestion> quizQuestions) {
+	public Quiz(String quizName, String description, double passingPercentage, double allocatedPoints,
+			double allocatedTime, double totalQuestions, double maxScore, List<QuizQuestion> quizQuestions
+			) {
 
 		this.quizName = quizName;
 		this.description = description;
@@ -67,7 +75,7 @@ public class Quiz {
 		this.allocatedTime = allocatedTime;
 		this.totalQuestions = totalQuestions;
 		this.maxScore = maxScore;
-
+		
 		this.quizQuestions = quizQuestions;
 	}
 
@@ -91,11 +99,11 @@ public class Quiz {
 		this.updatedAt = updatedAt;
 	}
 
-	public long getQuizId() {
+	public Long getQuizId() {
 		return quizId;
 	}
 
-	public void setQuizId(long quizId) {
+	public void setQuizId(Long quizId) {
 		this.quizId = quizId;
 	}
 

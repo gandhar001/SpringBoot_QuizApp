@@ -2,7 +2,11 @@ package com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 public class SubmittedQuizDTO {
+	
+@NotNull
 	private String questionId;
 
 	List<String> attemptedOptions;

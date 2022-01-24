@@ -3,7 +3,7 @@ package com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
-public class QuizCategoriesDTO {
+public class QuizCategoryDTO {
 
 	public long getCategoryId() {
 		return categoryId;
@@ -45,7 +45,7 @@ public class QuizCategoriesDTO {
 
 	private String quizCount;
 
-	public QuizCategoriesDTO(long categoryId, String category, String description, String quizCount) {
+	public QuizCategoryDTO(long categoryId, String category, String description, String quizCount) {
 
 		this.categoryId = categoryId;
 		this.category = category;

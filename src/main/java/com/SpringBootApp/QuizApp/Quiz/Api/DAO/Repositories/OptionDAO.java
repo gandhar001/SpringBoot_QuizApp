@@ -1,4 +1,4 @@
-package com.SpringBootApp.QuizApp.Quiz.Api.DAO;
+package com.SpringBootApp.QuizApp.Quiz.Api.DAO.Repositories;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

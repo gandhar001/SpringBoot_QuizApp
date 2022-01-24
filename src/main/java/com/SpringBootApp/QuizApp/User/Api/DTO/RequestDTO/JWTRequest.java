@@ -1,8 +1,14 @@
 package com.SpringBootApp.QuizApp.User.Api.DTO.RequestDTO;
 
+
+import javax.validation.constraints.NotEmpty;
+
 public class JWTRequest {
 
+	@NotEmpty(message = "username can't be null or empty.")
 	private String username;
+	
+	@NotEmpty(message = "password can't be null or empty.")
 	private String password;
 
 	public String getUsername() {

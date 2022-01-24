@@ -2,14 +2,20 @@ package com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 public class QuizDTO {
+	@NotNull
 	private String quizName;
 	private String description;
+	@NotNull
 	private String allocatedPoints;
+	@NotNull
 	private String allocatedTime;
+	@NotNull
 	private String maxScore;
-	
 
+	@NotNull
 	private String passingPercentage;
 
 	private List<QuestionDTO> questions;
@@ -30,7 +36,6 @@ public class QuizDTO {
 		this.questions = questions;
 	}
 
-	
 	public List<QuestionDTO> getQuestions() {
 		return questions;
 	}

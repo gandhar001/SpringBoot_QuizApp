@@ -9,13 +9,14 @@ import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuizSubmissionDTO;
 public interface QuizService {
 	public Map<String, Object> createQuiz(CreateQuizDTO createQuizDTO) throws Exception;
 
-	public Map<String, Object> fetchCategories() throws Exception;
+	public Map<String, Object> searchCategory(String categoryKey,Integer pageNo, Integer pageSize, String sortBy) throws Exception;
 
-	public Map<String, Object> fetchQuizes(Long categoryId) throws Exception;
+	public Map<String, Object> searchQuiz(String quizKey,Integer pageNo, Integer pageSize, String sortBy) throws Exception;
+	
+	public Map<String, Object> fetchQuizesWithCategory( String categoryId,Integer pageNo, Integer pageSize, String sortBy) throws Exception;
 
-	public Map<String, Object> fetchQuizQuestions(Long quizId) throws Exception;
+	public Map<String, Object> fetchQuizQuestions(String quizId) throws Exception;
 
-	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, Long quizId)
-			throws Exception;
+	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, String quizId) throws Exception;
 
 }

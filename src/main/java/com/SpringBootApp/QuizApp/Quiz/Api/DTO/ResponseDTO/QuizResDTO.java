@@ -1,13 +1,13 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO;
 
-import java.util.Date;
-
+import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizCategory;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class QuizResDTO {
 
 	private String quizId;
+	private QuizCategory category;
 	private String quizName;
 	private String description;
 	private String allocatedPoints;
@@ -16,25 +16,33 @@ public class QuizResDTO {
 	private String totalQuestions;
 	private String maxScore;
 
-	private Date createdAt;
-	private Date updatedAt;
-
-	public QuizResDTO(String quizId, String quizName, String description, String allocatedPoints, String allocatedTime,
-			String totalQuestions, String maxScore,String passingPercentage, Date createdAt, Date updatedAt) {
-		this.quizId = quizId;
+	public QuizResDTO(long quizId, String quizName, String description, double allocatedPoints, double allocatedTime,
+			double totalQuestions, double maxScore, double passingPercentage, QuizCategory category) {
+		this.quizId = String.valueOf(quizId);
 		this.quizName = quizName;
 		this.description = description;
-		this.allocatedPoints = allocatedPoints;
-		this.allocatedTime = allocatedTime;
-		this.totalQuestions = totalQuestions;
-		this.maxScore = maxScore;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
-		this.passingPercentage=passingPercentage;
-		
+		this.allocatedPoints = String.valueOf(allocatedPoints);
+		this.allocatedTime = String.valueOf(allocatedTime);
+		this.totalQuestions = String.valueOf(totalQuestions);
+		this.maxScore = String.valueOf(maxScore);
+		this.category = category;
+		this.passingPercentage = String.valueOf(passingPercentage);
+
 	}
 
-	
+	public QuizResDTO(long quizId, String quizName, String description, double allocatedPoints, double allocatedTime,
+			double totalQuestions, double maxScore, double passingPercentage) {
+		this.quizId = String.valueOf(quizId);
+		this.quizName = quizName;
+		this.description = description;
+		this.allocatedPoints = String.valueOf(allocatedPoints);
+		this.allocatedTime = String.valueOf(allocatedTime);
+		this.totalQuestions = String.valueOf(totalQuestions);
+		this.maxScore = String.valueOf(maxScore);
+
+		this.passingPercentage = String.valueOf(passingPercentage);
+
+	}
 
 	public String getQuizName() {
 		return quizName;
@@ -42,6 +50,14 @@ public class QuizResDTO {
 
 	public void setQuizName(String quizName) {
 		this.quizName = quizName;
+	}
+
+	public QuizCategory  getCategory() {
+		return category;
+	}
+
+	public void setCategory(QuizCategory  category) {
+		this.category = category;
 	}
 
 	public String getDescription() {
@@ -90,22 +106,6 @@ public class QuizResDTO {
 
 	public void setQuizId(String quizId) {
 		this.quizId = quizId;
-	}
-
-	public Date getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public Date getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public void setUpdatedAt(Date updatedAt) {
-		this.updatedAt = updatedAt;
 	}
 
 	public String getPassingPercentage() {

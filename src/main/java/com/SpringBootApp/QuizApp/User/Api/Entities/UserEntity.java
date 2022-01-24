@@ -1,5 +1,6 @@
 package com.SpringBootApp.QuizApp.User.Api.Entities;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -7,32 +8,42 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
+import javax.validation.constraints.Email;
+
 
 @Entity
-public class UserEntity {
+@Table(name="UserEntity")
+public class UserEntity implements Serializable {
+	private static final long serialVersionUID = 4799552540694629220L;
+
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long userId;
 
-	@Column(nullable = false, unique = true)
+	
+	@Column(nullable = false)
 	private String username;
 
+	
 	@Column(nullable = false)
 	private String password;
 
+	
 	@Column(nullable = false)
 	private String firstName;
 
 	private String lastName;
 
 	@Column(nullable = false)
+	
+	@Email(message="invalid email format.")
 	private String email;
 
 	@Column(precision = 10, scale = 2, columnDefinition = "Decimal(10,2) default '0.00'")

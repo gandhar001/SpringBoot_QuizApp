@@ -2,8 +2,11 @@ package com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 public class CategoryDTO 
 {
+	@NotNull
 	private String category;
 	private String description;
 	private List<QuizDTO> quizes ;

@@ -1,40 +1,42 @@
-
 package com.SpringBootApp.QuizApp.Quiz.Api.Services.Implementation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.EntityNotFoundException;
-
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import com.SpringBootApp.QuizApp.ExceptionHandling.ExceptionClasses.DatabaseException;
+import com.SpringBootApp.QuizApp.ExceptionHandling.ExceptionClasses.ResourceNotFoundException;
+import com.SpringBootApp.QuizApp.ExceptionHandling.ExceptionClasses.UnableToSaveException;
+import com.SpringBootApp.QuizApp.Quiz.Api.DAO.Repositories.AttemptedQuizesDAO;
+import com.SpringBootApp.QuizApp.Quiz.Api.DAO.Repositories.QuestionDAO;
 
-import com.SpringBootApp.QuizApp.Quiz.Api.DAO.AttemptedQuizesDAO;
-import com.SpringBootApp.QuizApp.Quiz.Api.DAO.QuestionDAO;
-import com.SpringBootApp.QuizApp.Quiz.Api.DAO.QuizCategoryDAO;
-import com.SpringBootApp.QuizApp.Quiz.Api.DAO.QuizDAO;
+import com.SpringBootApp.QuizApp.Quiz.Api.DAO.Repositories.QuizCategoryRepository;
+
+import com.SpringBootApp.QuizApp.Quiz.Api.DAO.Repositories.QuizRepository;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.CreateQuizDTO;
-
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuestionDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuizDTO;
-
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuizOptionsDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.QuizSubmissionDTO;
-
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.SubmittedQuizDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizResDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.GeneratedQuizResultDTO;
-import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizCategoriesDTO;
-
+import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizCategoryDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.ResponseDTO.QuizQuestionsDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.DTO.RequestDTO.CategoryDTO;
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.AttemptedQuizes;
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.Quiz;
-
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizCategory;
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizOptions;
 import com.SpringBootApp.QuizApp.Quiz.Api.Entities.QuizQuestion;
@@ -49,10 +51,10 @@ public class QuizServiceImpl implements QuizService {
 	private static final Logger logger = LoggerFactory.getLogger(JWTUserDetailsServiceImpl.class);
 
 	@Autowired
-	private QuizCategoryDAO categoryDAO;
+	private QuizCategoryRepository categoryDAO;
 
 	@Autowired
-	private QuizDAO quizDAO;
+	private QuizRepository quizDAO;
 
 	@Autowired
 	private UserDao userDAO;
@@ -64,380 +66,416 @@ public class QuizServiceImpl implements QuizService {
 	private QuestionDAO questionDAO;
 
 	@Override
-	public Map<String, Object> createQuiz(CreateQuizDTO createQuizDTO) throws Exception {
 
+	public Map<String, Object> createQuiz(CreateQuizDTO createQuizDTO) {
 		Map<String, Object> createQuizRes = new HashMap<>();
-
 		List<QuizQuestion> quizQuestions = null;
 		List<Quiz> quizes = null;
-		List<String> quizCategories = null;
+
+		List<Quiz> updateQuizes = new ArrayList<>();
+		List<QuizCategory> quizCategories = new ArrayList<>();
+		Quiz newQuiz;
+		long quizCount = 0;
+
 		Double totalAnswers = 0.0;
 		List<QuizOptions> quizOptions = null;
+		QuizCategory quizCategory = null;
+		QuizCategory newCategory = null;
+		quizCategories = new ArrayList<>();
+		for (CategoryDTO category : createQuizDTO.getQuizCategories())
 
-		try {
+		{
+			if (category != null) {
+				if (category.getQuizes().size() > 0) {
+					quizCategory = categoryDAO.findByCategory(category.getCategory());
 
-			quizCategories = new ArrayList<>();
-			for (CategoryDTO category : createQuizDTO.getQuizCategories())
+					quizes = new ArrayList<>();
 
-			{
-				quizes = new ArrayList<>();
-				for (QuizDTO quiz : category.getQuizes()) {
+					for (QuizDTO quiz : category.getQuizes()) {
+						if (quiz.getQuestions().size() > 0) {
+							quizQuestions = new ArrayList<>();
+							for (QuestionDTO question : quiz.getQuestions()) {
 
-					quizQuestions = new ArrayList<>();
-					for (QuestionDTO question : quiz.getQuestions()) {
+								if (question.getQuizOptions().size() > 0) {
+									quizOptions = new ArrayList<>();
+									totalAnswers = 0.0;
+									for (QuizOptionsDTO quizOption : question.getQuizOptions()) {
 
-						if (question.getQuizOptions().size() > 0) {
-							quizOptions = new ArrayList<>();
-							totalAnswers = 0.0;
-							for (QuizOptionsDTO quizOption : question.getQuizOptions()) {
-
-								if (quizOption.getIsAnswer()) {
-									totalAnswers++;
+										if (quizOption.getIsAnswer()) {
+											totalAnswers++;
+										}
+										quizOptions
+												.add(new QuizOptions(quizOption.getOption(), quizOption.getIsAnswer()));
+									}
 								}
-								quizOptions.add(new QuizOptions(quizOption.getOption(), quizOption.getIsAnswer()));
+
+								if (question != null && totalAnswers > 0 && quizOptions.size() > 0) {
+
+									quizQuestions.add(new QuizQuestion(question.getQuestion(),
+											question.getDescription(), question.getQuestionType(),
+											Double.valueOf(quizOptions.size()), Double.valueOf(totalAnswers),
+											Double.valueOf(question.getQuestionScore()), quizOptions));
+								}
+
 							}
 						}
 
-						if (question != null && totalAnswers > 0 && quizOptions.size() > 0) {
+						if (quizQuestions.size() > 0 && quiz != null) {
 
-							quizQuestions.add(new QuizQuestion(question.getQuestion(), question.getDescription(),
-									question.getQuestionType(), Double.valueOf(quizOptions.size()),
-									Double.valueOf(totalAnswers), Double.valueOf(question.getQuestionScore()),
-									quizOptions));
+							newQuiz = new Quiz(quiz.getQuizName(), quiz.getDescription(),
+									Double.valueOf(quiz.getPassingPercentage()),
+									Double.valueOf(quiz.getAllocatedPoints()), Double.valueOf(quiz.getAllocatedTime()),
+									Double.valueOf(quizQuestions.size()), Double.valueOf(quiz.getMaxScore()),
+									quizQuestions);
+							if (quizCategory != null) {
+								newQuiz.setQuizCategory(quizCategory);
+								updateQuizes.add(newQuiz);
+
+							} else {
+								quizes.add(newQuiz);
+							}
 						}
 
 					}
 
-					if (quizQuestions.size() > 0 && quiz != null) {
-
-						quizes.add(new Quiz(quiz.getQuizName(), quiz.getDescription(),
-								Double.valueOf(quiz.getPassingPercentage()), Double.valueOf(quiz.getAllocatedPoints()),
-								Double.valueOf(quiz.getAllocatedTime()), Double.valueOf(quizQuestions.size()),
-								Double.valueOf(quiz.getMaxScore()), quizQuestions));
-					}
-
 				}
 
-				if (quizes.size() > 0 && category != null) {
+				if (quizCategory != null) {
+					
+					quizCategory.setQuizCount(
+							String.valueOf(Long.valueOf(quizCategory.getQuizCount()) + updateQuizes.size()));
 
-					quizCategories.add(String.valueOf(categoryDAO.save(new QuizCategory(category.getCategory(),
-							category.getDescription(), String.valueOf(quizes.size()), quizes)).getCategoryId()));
+				} else {
+					quizCategory = new QuizCategory(category.getCategory(), category.getDescription(),
+							String.valueOf(quizes.size()), quizes);
+
 				}
-
+				quizCategories.add(quizCategory);
 			}
 
-			if (createQuizDTO.getQuizCategories().size() == quizCategories.size()) {
-
-				createQuizRes.put("createdQuizes", quizCategories);
-				createQuizRes.put("status", "success");
-				logger.info("quizes created successfully!!");
-			}
-
-		} catch (EntityNotFoundException ex) {
-			createQuizRes.put("status", "failed");
-			createQuizRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
-		} catch (Exception ex) {
-
-			createQuizRes.put("status", "failed");
-			createQuizRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
 		}
+		if (updateQuizes.size() != 0) {
+			quizDAO.saveAll(updateQuizes);
+		}
+		if (quizCategories.size() > 0) {
+			categoryDAO.saveAll(quizCategories);
+		}
+
+		logger.info("quizes created successfully!!");
+
 		return createQuizRes;
+
 	}
 
 	@Override
-	public Map<String, Object> fetchCategories() throws Exception {
-		Map<String, Object> fetchCategoriesRes = new HashMap<>();
+	@Transactional
+	public Map<String, Object> searchCategory(String categoryKey, Integer pageNo, Integer pageSize, String sortBy)
+			throws Exception {
+		Map<String, Object> searchCategoryRes = new HashMap<>();
 
-		List<QuizCategoriesDTO> quizCategories = null;
+		Pageable paging;
+		List<QuizCategoryDTO> pagedResult = new ArrayList<>();
 		try {
-			quizCategories = categoryDAO.fetchCategories();
 
-			if (quizCategories.size() != 0) {
-				fetchCategoriesRes.put("fetchedCategories", quizCategories);
-				fetchCategoriesRes.put("status", "success");
-				logger.info("categories fetched successfully!!");
-			}
+			paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
 
-		} catch (EntityNotFoundException ex) {
-			fetchCategoriesRes.put("status", "failed");
-			fetchCategoriesRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
+			pagedResult = categoryDAO.searchCategory(categoryKey, paging);
+
 		} catch (Exception ex) {
-
-			fetchCategoriesRes.put("status", "failed");
-			fetchCategoriesRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
+			logger.error("error occured while fetching quizes categories with categoryKey", ex);
+			throw new DatabaseException("categoryKey", categoryKey, "Error occured while fetching quizes categories");
+		}
+		if (pagedResult == null || pagedResult.size() == 0) {
+			logger.error("Unable to fetch quizes categories");
+			throw new ResourceNotFoundException("categoryKey", categoryKey,
+					"Unable to fetch quizes categories with categoryKey");
 		}
 
-		return fetchCategoriesRes;
+		searchCategoryRes.put("fetchedCategories", pagedResult);
+		logger.info("categories fetched successfully!!");
+
+		return searchCategoryRes;
 	}
 
 	@Override
-	public Map<String, Object> fetchQuizes(Long categoryId) throws Exception {
+	@Transactional
+	public Map<String, Object> searchQuiz(String quizKey, Integer pageNo, Integer pageSize,
+			String sortBy) throws Exception {
+		Map<String, Object> searchQuizRes = new HashMap<>();
+		Pageable paging;
+		List<QuizResDTO> pagedResult = new ArrayList<>();
 
+		try {
+			paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
+			pagedResult = quizDAO.searchQuiz(quizKey, paging);
+
+		} catch (Exception ex) {
+			logger.error("error occured while fetching quizes with quizKey", ex);
+			throw new DatabaseException("quizKey", quizKey, "Error occured while fetching quizes with quizKey");
+		}
+
+		if (pagedResult == null || pagedResult.size() == 0) {
+			logger.error("Unable to fetch quizes with quizKey", quizKey);
+			throw new ResourceNotFoundException("quizKey", quizKey, "Unable to fetch quizes with quizKey");
+
+		}
+		searchQuizRes.put("fetchedQuizes", pagedResult);
+
+		logger.info("quizes fetched successfully!!");
+
+		return searchQuizRes;
+	}
+
+	
+	@Override
+	@Transactional
+	public Map<String, Object> fetchQuizesWithCategory(String categoryId, Integer pageNo, Integer pageSize, String sortBy)
+			throws Exception {
+		
 		Map<String, Object> fetchQuizesRes = new HashMap<>();
-		List<QuizResDTO> fetchedQuizes = null;
-		List<Quiz> quizes = null;
+		Pageable paging;
+		List<QuizResDTO> pagedResult = new ArrayList<>();
+
 		try {
-			quizes = quizDAO.fetchQuiz(categoryId);
+			paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
+			pagedResult = quizDAO.fetchQuizesWithCategory( Long.valueOf(categoryId), paging);
 
-			if (quizes.size() > 0) {
-				fetchedQuizes = new ArrayList<>();
-
-				for (Quiz quiz : quizes) {
-					if (quiz != null) {
-						fetchedQuizes.add(new QuizResDTO(String.valueOf(quiz.getQuizId()), quiz.getQuizName(),
-								quiz.getDescription(), String.valueOf(quiz.getAllocatedPoints()),
-								String.valueOf(quiz.getAllocatedTime()), String.valueOf(quiz.getTotalQuestions()),
-								String.valueOf(quiz.getMaxScore()), String.valueOf(quiz.getPassingPercentage()),
-								quiz.getCreatedAt(), quiz.getUpdatedAt()));
-					}
-				}
-				fetchQuizesRes.put("fetchedQuizes", fetchedQuizes);
-				fetchQuizesRes.put("status", "success");
-				logger.info("quizes fetched successfully!!");
-			}
-
-		} catch (EntityNotFoundException ex) {
-			fetchQuizesRes.put("status", "failed");
-			fetchQuizesRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
 		} catch (Exception ex) {
-
-			fetchQuizesRes.put("status", "failed");
-			fetchQuizesRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
+			logger.error("error occured while fetching quizes with categoryId", ex);
+			throw new DatabaseException("categoryId", categoryId, "Error occured while fetching quizes with categry");
 		}
+
+		if (pagedResult == null || pagedResult.size() == 0) {
+			logger.error("Unable to fetch quizes with categry", categoryId);
+			throw new ResourceNotFoundException("categoryId", categoryId, "Unable to fetch quizes with quizKey");
+
+		}
+		fetchQuizesRes.put("fetchedQuizes", pagedResult);
+
+		logger.info("quizes fetched successfully!!");
 
 		return fetchQuizesRes;
 	}
-
+	
+	
 	@Override
-	public Map<String, Object> fetchQuizQuestions(Long quizId) throws Exception {
+	@Transactional
+	public Map<String, Object> fetchQuizQuestions(String quizId) {
 
 		Map<String, Object> fetchQuestionsRes = new HashMap<>();
-		List<QuizQuestionsDTO> fetchedQuestions = null;
+		List<QuizQuestionsDTO> fetchedQuestions = new ArrayList<>();
+		List<QuizQuestion> quizQuestions = new ArrayList<>();
 
-		List<QuizQuestion> quizQuestions = null;
 		try {
-			quizQuestions = questionDAO.fetchQuizQuestions(quizId);
 
-			if (quizQuestions.size() > 0) {
-				fetchedQuestions = new ArrayList<>();
-				for (QuizQuestion quizQuestion : quizQuestions) {
-					if (quizQuestion != null) {
-						fetchedQuestions.add(new QuizQuestionsDTO(String.valueOf(quizQuestion.getQuestionId()),
-								quizQuestion.getQuestion(), quizQuestion.getDescription(),
-								quizQuestion.getQuestionType(), String.valueOf(quizQuestion.getTotalOptions()),
-								String.valueOf(quizQuestion.getQuestionScore()), quizQuestion.getOptions(),
-								quizQuestion.getCreatedAt(), quizQuestion.getUpdatedAt()));
-					}
-				}
+			quizQuestions = questionDAO.fetchQuizQuestions(Long.valueOf(quizId));
 
-				fetchQuestionsRes.put("fetchedQuestions", fetchedQuestions);
-				fetchQuestionsRes.put("status", "success");
-				logger.info("Questions fetched successfully!!");
-			}
-
-		} catch (EntityNotFoundException ex) {
-			fetchQuestionsRes.put("status", "failed");
-			fetchQuestionsRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
-		} catch (Exception ex) {
-
-			fetchQuestionsRes.put("status", "failed");
-			fetchQuestionsRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
 		}
+
+		catch (Exception ex) {
+
+			logger.error("error occured while fetching quiz questions with quizId", ex);
+			throw new DatabaseException("quizId", quizId, "Error occured while fetching quiz questions with quizId");
+
+		}
+		if (quizQuestions == null || quizQuestions.size() == 0) {
+			throw new ResourceNotFoundException("quizId", quizId, "Unable to fetch questions with quiz");
+		}
+		quizQuestions.forEach((quizQuestion) -> {
+
+			if (quizQuestion != null) {
+				fetchedQuestions.add(new QuizQuestionsDTO(quizQuestion.getQuestionId(), quizQuestion.getQuestion(),
+						quizQuestion.getDescription(), quizQuestion.getQuestionType(), quizQuestion.getTotalOptions(),
+						quizQuestion.getQuestionScore(), quizQuestion.getQuizOptions()));
+			}
+		});
+
+		fetchQuestionsRes.put("fetchedQuestions", fetchedQuestions);
+
+		logger.info("Questions fetched successfully!!");
 
 		return fetchQuestionsRes;
 	}
 
 	@Override
-	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, Long quizId)
-			throws Exception {
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Map<String, Object> generateQuizResult(QuizSubmissionDTO quizSubmissionDTO, String quizId) {
 		Map<String, Object> generateQuizResultRes = new HashMap<>();
 		Quiz quiz = null;
 		UserEntity user = null;
-		QuizQuestion attemptedQuestion = null;
-		SubmittedQuizDTO quizQuestion = null;
+
 		AttemptedQuizes attemptedQuiz = null;
-		List<Long> attemptedQuestionIds = null;
-		List<QuizQuestion> attemptedQuestions = null;
-		List<QuizQuestion> correctAnswers = null;
+
+		List<Long> attemptedQuestionIds = new ArrayList<>();
+
+		// wrapper is used to modify the variables in lamba expression
+		var wrapper = new Object() {
+			List<QuizQuestion> attemptedQuestions = null;
+			List<QuizQuestion> correctAnswers = new ArrayList<>();
+
+		};
 		List<SubmittedQuizDTO> submittedQuestions = null;
-		Double totAttemptedQuestions = 0.0;
-		Double totAttempts = 0.0;
-		Double correctOptions = 0.0;
-		Double processedPercentage = 0.0;
-		Double processedScore = 0.0;
+		double totAttemptedQuestions = 0.0;
+		double totAttempts = 0.0;
+		double processedPercentage = 0.0;
+		double processedScore = 0.0;
 		String attemptStatus = "Failed";
-		Double processedPoints = 0.0;
+		double processedPoints = 0.0;
 		Boolean quizCleared = false;
-		Double totCorrectAnswers = 0.0;
-		Double totIncorrectAnswers = 0.0;
-		Long userId = null;
+		double totCorrectAnswers = 0.0;
+		double totIncorrectAnswers = 0.0;
+
+		long userId;
+		long currentQuizId;
 		GeneratedQuizResultDTO generatedQuizResult = null;
 
+		currentQuizId = Long.valueOf(quizId);
+		userId = Long.valueOf(quizSubmissionDTO.getUserId());
+		try {
+			user = userDAO.findById(userId).get();
+
+		} catch (Exception ex) {
+			logger.error("error occured while fetching user with userId", ex, userId);
+			throw new DatabaseException("userId", String.valueOf(userId),
+					"Error occured while fetching user with userId");
+		}
+		if (user == null) {
+			logger.error("Unable to fetch user with userId", userId);
+			throw new ResourceNotFoundException("userId", String.valueOf(userId), "Unable to fetch user with userId");
+		}
 		try {
 
-			userId = Long.valueOf(quizSubmissionDTO.getUserId());
-			user = userDAO.findById(userId).get();
-			if (user == null) {
+			quiz = quizDAO.findById(currentQuizId).get();
 
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("errorMessage", "User does not exist");
-				logger.info("User with user id :" + userId + " does not exist.");
-				return generateQuizResultRes;
+		} catch (Exception ex) {
+			logger.error("error occured while fetching quiz with quizId", ex, quizId);
+			throw new DatabaseException("quizId", quizId, "Error occured while fetching quiz with quizId");
+		}
+		if (quiz == null) {
+			logger.error("Unable to fetch quiz with quizId", quizId);
+			throw new ResourceNotFoundException("quizId", quizId, "Unable to fetch quiz with quizId");
+		}
+		submittedQuestions = quizSubmissionDTO.getSubmittedQuiz();
 
-			}
+		totAttemptedQuestions = Double.valueOf(submittedQuestions.size());
 
-			if (quizId == null) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("errorMessage", "Quiz does not exist");
-				logger.info("Quiz with quiz id :" + quizId + " does not exist.");
-				return generateQuizResultRes;
-			} else {
-				quiz = quizDAO.findById(quizId).get();
-				attemptedQuiz = attemptedQuizesDAO.fetchAttemptedQuiz(quizId);
-			}
+		if (totAttemptedQuestions > 0.0) {
+
+			attemptedQuestionIds = submittedQuestions.stream()
+					.map(submittedQuestion -> Long.valueOf(submittedQuestion.getQuestionId()))
+					.collect(Collectors.toList());
+
 			try {
-				totAttemptedQuestions = Double.valueOf(quizSubmissionDTO.getSubmittedQuiz().size());
-				if (totAttemptedQuestions > 0.0) {
+				wrapper.attemptedQuestions = questionDAO.fetchAttemptedQuestions(attemptedQuestionIds, currentQuizId);
 
-					attemptedQuestionIds = new ArrayList<>();
-					attemptedQuestions = new ArrayList<>();
-					submittedQuestions = quizSubmissionDTO.getSubmittedQuiz();
-
-					if (submittedQuestions.size() > 0) {
-						for (SubmittedQuizDTO submittedQuiz : submittedQuestions) {
-							if (submittedQuiz.getQuestionId() != null) {
-								attemptedQuestionIds.add(Long.valueOf(submittedQuiz.getQuestionId()));
-							}
-						}
-					}
-
-					attemptedQuestions = questionDAO.fetchAttemptedQuestions(attemptedQuestionIds, quizId);
-
-					if (attemptedQuestions.size() > 0) {
-						attemptedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
-								.compareTo(String.valueOf(o2.getQuestionId())));
-					}
-					if (submittedQuestions.size() > 0) {
-						submittedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
-								.compareTo(String.valueOf(o2.getQuestionId())));
-
-					}
-
-				}
-
-			} catch (NullPointerException ex) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
-			} catch (ArrayIndexOutOfBoundsException ex) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
 			} catch (Exception ex) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
+				logger.error("error occured while fetching attempted questions with quizId", ex, quizId);
+				throw new DatabaseException("quizId", quizId,
+						"Error occured while fetching attempted questions with quizId");
 			}
 
+			if (wrapper.attemptedQuestions == null) {
+				logger.error("Unable to fetch attempted questions for quizId", quizId);
+				throw new ResourceNotFoundException("quizId", quizId, "Unable to fetch attempted questions for quizId");
+			}
+//					if (attemptedQuestions.size() > 0) {
+//						attemptedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
+//								.compareTo(String.valueOf(o2.getQuestionId())));
+//					}
+//					if (submittedQuestions.size() > 0) {
+//						submittedQuestions.sort((o1, o2) -> String.valueOf(o1.getQuestionId())
+//								.compareTo(String.valueOf(o2.getQuestionId())));
+//
+//					}
+
 			try {
-				if (attemptedQuestions.size() > 0 && submittedQuestions.size() > 0) {
-					correctAnswers = new ArrayList<>();
+				submittedQuestions.forEach((submittedQuestion) -> {
 
-					for (int i = 0; i < attemptedQuestions.size(); i++) {
+					if (submittedQuestion == null) {
 
-						attemptedQuestion = attemptedQuestions.get(i);
-						correctOptions = 0.0;
+						logger.info("Submitted question is null ");
 
-						quizQuestion = submittedQuestions.get(i);
+						return;
+					}
 
-						if (attemptedQuestion != null && quizQuestion != null
-								&& String.valueOf(attemptedQuestion.getQuestionId())
-										.equalsIgnoreCase(quizQuestion.getQuestionId())) {
+					Double correctOptions = 0.0;
+					QuizQuestion attemptedQuestion = wrapper.attemptedQuestions.stream().filter(question -> String
+							.valueOf(question.getQuestionId()).equalsIgnoreCase(submittedQuestion.getQuestionId()))
+							.findAny().orElse(null);
 
-							for (String optionId : quizQuestion.getAttemptedOptions()) {
+					if (attemptedQuestion == null) {
+						logger.info("AttemptedQuestion question is null ");
+						return;
+					}
 
-								if (optionId != null) {
-									for (QuizOptions quizOption : attemptedQuestion.getOptions()) {
-										if (quizOption != null && String.valueOf(quizOption.getOptionId())
-												.equalsIgnoreCase(optionId)) {
-											if (quizOption.getIsAnswer()) {
+					for (String optionId : submittedQuestion.getAttemptedOptions()) {
 
-												correctOptions++;
+						if (optionId == null || optionId.isEmpty()) {
 
-											}
+							logger.info("Submitted option is null or empty for question ",
+									submittedQuestion.getQuestionId());
+							continue;
 
-										}
+						}
 
-									}
-								}
-							}
-							if (correctOptions.equals(attemptedQuestion.getTotalAnswers())
-									&& Double.valueOf(quizQuestion.getAttemptedOptions().size())
-											.equals(attemptedQuestion.getTotalAnswers())) {
-								correctAnswers.add(attemptedQuestion);
-							}
+						QuizOptions quizOption = attemptedQuestion.getQuizOptions().stream()
+								.filter(option -> String.valueOf(option.getOptionId()).equalsIgnoreCase(optionId))
+								.findFirst().orElse(null);
+
+						if (quizOption.getIsAnswer()) {
+
+							correctOptions++;
 
 						}
 
 					}
 
-				}
-			} catch (NullPointerException ex) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
-			}
+					if (correctOptions.equals(attemptedQuestion.getTotalAnswers())
+							&& Double.valueOf(submittedQuestion.getAttemptedOptions().size())
+									.equals(attemptedQuestion.getTotalAnswers())) {
+						wrapper.correctAnswers.add(attemptedQuestion);
+					}
 
-			catch (ArrayIndexOutOfBoundsException ex) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
+				});
 			} catch (Exception ex) {
 
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
+				logger.error("Error occured while verifying the attempted questions for attempted quiz", ex);
 
 			}
-			try {
+			totCorrectAnswers = Double.valueOf(wrapper.correctAnswers.size());
 
-				totCorrectAnswers = Double.valueOf(correctAnswers.size());
+			if (totCorrectAnswers > 0) {
 				totIncorrectAnswers = totAttemptedQuestions - totCorrectAnswers;
 
-				if (totCorrectAnswers > 0) {
+				processedScore = (wrapper.correctAnswers.stream())
+						.map(correctAnswer -> correctAnswer.getQuestionScore()).reduce(0.0, (a, b) -> a + b);
 
-					for (QuizQuestion correctQuestion : correctAnswers) {
-						processedScore = processedScore + Double.valueOf(correctQuestion.getQuestionScore());
+				if (processedScore > 0.0) {
+					processedPercentage = processedScore * 100 / quiz.getMaxScore();
+				}
 
+				if (processedPercentage > 0 && processedPercentage >= quiz.getPassingPercentage()) {
+
+					quizCleared = true;
+
+					attemptStatus = "Passed";
+					processedPoints = quiz.getAllocatedPoints();
+
+					user.setProFactor(processedPoints);
+					try {
+						userDAO.save(user);
+					} catch (Exception ex) {
+						logger.error("Error occured while updating user pro-factor", ex);
+						throw new UnableToSaveException("Error occured while updating user pro-factor");
 					}
-					if (processedScore > 0) {
-						processedPercentage = processedScore * 100 / quiz.getMaxScore();
-					}
+					try {
 
-					if (processedPercentage > 0 && processedPercentage >= quiz.getPassingPercentage()) {
-
-						quizCleared = true;
-
-						attemptStatus = "Passed";
-						processedPoints = quiz.getAllocatedPoints();
-
-						if (user != null) {
-							user.setProFactor(processedPoints);
-							userDAO.save(user);
-						}
+						attemptedQuiz = attemptedQuizesDAO.fetchAttemptedQuiz(currentQuizId, userId);
 
 						if (attemptedQuiz != null) {
 
 							totAttempts = attemptedQuiz.getTotalAttempts();
-							if (totAttempts == null) {
+							if (totAttempts == 0.0) {
 								totAttempts = 1.0;
 							} else {
 								totAttempts++;
@@ -454,53 +492,32 @@ public class QuizServiceImpl implements QuizService {
 									processedScore, quizCleared);
 
 						}
-						if (attemptedQuiz != null)
-							attemptedQuizesDAO.save(attemptedQuiz);
 
+						attemptedQuizesDAO.save(attemptedQuiz);
+						
+					} catch (Exception ex) {
+						logger.error("Error occured while fetching or updating attempted quiz", ex);
+						throw new DatabaseException("quizId", quizId,
+								"Error occured while fetching or updating attempted quiz");
 					}
 
 				}
 
-			} catch (NullPointerException ex) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
 			}
 
-			catch (Exception ex) {
-				generateQuizResultRes.put("status", "failed");
-				generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-				logger.error(ex.getLocalizedMessage());
-
-			}
-			generatedQuizResult = new GeneratedQuizResultDTO(String.valueOf(processedPercentage),
-					String.valueOf(totAttemptedQuestions), String.valueOf(totCorrectAnswers),
-					String.valueOf(totIncorrectAnswers), String.valueOf(processedScore), String.valueOf(attemptStatus),
-					String.valueOf(processedPoints));
-
-			if (generatedQuizResult != null) {
-				generateQuizResultRes.put("generatedQuizResult", generatedQuizResult);
-				generateQuizResultRes.put("status", "success");
-				logger.info("Quiz Result generated successfully ");
-			}
-
-		} catch (EntityNotFoundException ex) {
-			generateQuizResultRes.put("status", "failed");
-			generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
-		} catch (NullPointerException ex) {
-
-			generateQuizResultRes.put("status", "failed");
-			generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
-		} catch (Exception ex) {
-
-			generateQuizResultRes.put("status", "failed");
-			generateQuizResultRes.put("exception", ex.getClass().getSimpleName());
-			logger.error(ex.getLocalizedMessage());
 		}
+		generatedQuizResult = new GeneratedQuizResultDTO(String.valueOf(processedPercentage),
+				String.valueOf(totAttemptedQuestions), String.valueOf(totCorrectAnswers),
+				String.valueOf(totIncorrectAnswers), String.valueOf(processedScore), String.valueOf(attemptStatus),
+				String.valueOf(processedPoints));
+
+		generateQuizResultRes.put("generatedQuizResult", generatedQuizResult);
+
+		logger.info("Quiz Result generated successfully ");
 
 		return generateQuizResultRes;
 	}
+
+	
 
 }

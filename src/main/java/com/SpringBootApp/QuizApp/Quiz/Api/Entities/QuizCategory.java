@@ -1,39 +1,35 @@
 package com.SpringBootApp.QuizApp.Quiz.Api.Entities;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-
 import javax.persistence.CascadeType;
-
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties({ "quizes", "createdAt", "updatedAt" })
 @Entity
-public class QuizCategory {
+public class QuizCategory implements Serializable {
+
+	private static final long serialVersionUID = -5676395399797221577L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long categoryId;
 
-	public String getCategory() {
-		return category;
-	}
-
-	public void setCategory(String category) {
-		this.category = category;
-	}
-
+	@Column(nullable = false)
 	private String category;
-	
+
 	private String description;
 
 	private String quizCount;
@@ -50,24 +46,32 @@ public class QuizCategory {
 	@UpdateTimestamp
 	private Date updatedAt;
 
-	public QuizCategory()
-	{
-		
+	public String getCategory() {
+		return category;
 	}
-	public QuizCategory( String category,String description, String quizCount, List<Quiz> quizes) {
 
-		this.category=category;
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public QuizCategory() {
+
+	}
+
+	public QuizCategory(String category, String description, String quizCount, List<Quiz> quizes) {
+
+		this.category = category;
 		this.description = description;
 		this.quizCount = quizCount;
 		this.quizes = quizes;
 
 	}
 
-	public long getCategoryId() {
+	public Long getCategoryId() {
 		return categoryId;
 	}
 
-	public void setCategoryId(long categoryId) {
+	public void setCategoryId(Long categoryId) {
 		this.categoryId = categoryId;
 	}
 
